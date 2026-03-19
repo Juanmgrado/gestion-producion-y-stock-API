@@ -41,7 +41,8 @@ export const reActiveUser = async (code: any) => {
   }
 
   if (foundUser.isActive === true) {
-    throw new Error("This user is already active" );
+    throw new Error("This user is already active");
+
   }
   foundUser.isActive = true;
 
