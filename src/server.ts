@@ -3,15 +3,17 @@ import express from "express";
 import { AppDataSource } from "./config/dataSource.js";
 import { User } from "./entities/user.entity.js";
 import { usersRepository } from "./repositories/usersRepository.js";
+import apiRouter from "./routes/indexs.js";
 
 const app = express();
-const PORT: number = 5001;
+const PORT: number = 5003;
 app.use(express.json());
 
 app.get("/", (req, res) => {
   res.json({ message: "Server on" });
 });
 
+app.use("/api", apiRouter);
 try {
   await AppDataSource.initialize();
   console.log("Data Source has been initialized!");
@@ -32,3 +34,4 @@ try {
 } catch (error) {
   console.error("Error during Data Source initialization", error);
 }
+
