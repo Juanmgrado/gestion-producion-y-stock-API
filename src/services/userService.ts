@@ -42,11 +42,12 @@ export const reActiveUser = async (code: any) => {
 
   if (foundUser.isActive === true) {
     throw new Error("This user is already active");
+
   }
   foundUser.isActive = true;
 
   await usersRepository.save(foundUser)
-  
+
   return { message: "User activated successfully" };
 };
 
