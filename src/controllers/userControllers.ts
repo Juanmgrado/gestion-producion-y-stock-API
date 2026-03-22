@@ -10,9 +10,9 @@ import {
 export const getUsers = async (req: Request, res: Response) => {
   try {
     const users = await getAllUsers();
-    res.json(users);
+    return res.json(users);
   } catch (error) {
-    res.status(500).json({ message: "Error getting users" });
+    return res.status(500).json({ message: "Error getting users" });
   }
 };
 
@@ -76,8 +76,8 @@ export const reActiveUserController = async (req: Request, res: Response) => {
     if (error.message === "User not found") {
       return res.status(404).json({ message: "User not found" });
     }
-    if(error.message === "This user is already active"){
-        res.status(400).json({ message: "This user is already active" });
+    if (error.message === "This user is already active") {
+      res.status(400).json({ message: "This user is already active" });
     }
   }
 };
