@@ -8,7 +8,7 @@ export const AppDataSource = new DataSource({
   password: "Goliat2912",
   database: "postgres",
   synchronize: true,
-  dropSchema: false,
+  dropSchema: true,
   logging: true,
   entities: ["src/entities/**/*.ts"],
   subscribers: [],
