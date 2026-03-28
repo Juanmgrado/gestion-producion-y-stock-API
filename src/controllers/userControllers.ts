@@ -3,7 +3,7 @@ import {
   createUser,
   deleteUserByCode,
   getAllUsers,
-  getuserByCode,
+  getuserById,
   reActiveUser,
 } from "../services/userService.js";
 
@@ -16,18 +16,18 @@ export const getUsers = async (req: Request, res: Response) => {
   }
 };
 
-export const getUserBycodeController = async (req: Request, res: Response) => {
+export const getUserByIdController = async (req: Request, res: Response) => {
   try {
-    const { code } = req.params;
-    if (!code) {
+    const { id } = req.body;
+    if (!id) {
       return res.status(400).json({
-        message: "Please, insert a valid number code",
+        message: "Please, insert a valid id",
       });
     }
-    const foundUser = await getuserByCode(code);
+    const foundUser = await getuserById(id);
     return res.status(200).json(foundUser);
   } catch (error: any) {
-    console.error("Error getting user by code:", error);
+    console.error("Error getting user by id:", error);
 
     if (error.message === "User not found") {
       return res.status(404).json({ message: "User not found" });

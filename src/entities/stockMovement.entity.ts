@@ -3,12 +3,13 @@ import {
   Entity,
   Column,
   CreateDateColumn,
-  ManyToOne
+  ManyToOne,
+  JoinColumn
 } from "typeorm";
 import { Product } from "./product.entity.js";
 import { User } from "./user.entity.js";
 
-enum MovementType {
+export enum MovementType {
   IN = "in",
   OUT = "out",
 }
@@ -17,17 +18,21 @@ enum MovementType {
 export class StockMovement {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
-  
-  @Column({type: "int"})
+
+  @Column({ type: "int" })
   quantity!: number;
-  
+
+  @Column({ type: "varchar", nullable: true, default: "" })
+  note!: String;
+
   @Column({ type: "enum", enum: MovementType, nullable: false })
   movement!: MovementType;
-  
-  @CreateDateColumn({type: Date})
+
+  @CreateDateColumn({ type: Date })
   createdAt!: Date;
 
-  @ManyToOne(() => Product)
+  @ManyToOne(() => Product, (product) => product.movements, { nullable: false })
+  @JoinColumn({ name: "productId" })
   product!: Product;
 
   @ManyToOne(() => User)
