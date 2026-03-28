@@ -25,8 +25,9 @@ export const createProduct = async (newProduct: string) => {
   return product;
 };
 
-export const findProduct = async (productName: string) => {
-  const foundProduct = await productRepository.findOneBy({ name: productName });
+export const findProductById = async (productId: string, manager?: any) => {
+  const repo = manager ? manager.getRepository(Product) : productRepository;
+  const foundProduct = await repo.findOneBy({ id: productId });
 
   if (!foundProduct) {
     throw new Error("Product not found");

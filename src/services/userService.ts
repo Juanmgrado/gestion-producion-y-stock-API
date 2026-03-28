@@ -10,8 +10,9 @@ export const getAllUsers = async () => {
   return allUsers;
 };
 
-export const getuserByCode = async (code: any) => {
-  const foundUser = await usersRepository.findOneBy({ code: code });
+export const getuserById = async (userID: any, manager?: any) => {
+  const repo = manager ? manager.getRepository(User) : usersRepository;
+  const foundUser = await repo.findOneBy({ id: userID });
   if (!foundUser) {
     throw new Error("User not found");
   }
@@ -42,11 +43,10 @@ export const reActiveUser = async (code: any) => {
 
   if (foundUser.isActive === true) {
     throw new Error("This user is already active");
-
   }
   foundUser.isActive = true;
 
-  await usersRepository.save(foundUser)
+  await usersRepository.save(foundUser);
 
   return { message: "User activated successfully" };
 };
