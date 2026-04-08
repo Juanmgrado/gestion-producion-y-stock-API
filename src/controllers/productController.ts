@@ -2,7 +2,7 @@ import { Response, Request } from "express";
 import {
   createProduct,
   deletProduct,
-  findProductById,
+  getProductById,
   getProduct,
 } from "../services/productService.js";
 
@@ -45,7 +45,7 @@ export const findProductByIdController = async (req: Request, res: Response) => 
       return res.status(400).json({ message: "Insert a valid product name" });
     }
 
-    const foundProduct = await findProductById(productId);
+    const foundProduct = await getProductById(productId);
     return res.status(200).json(foundProduct);
   } catch (error: any) {
     console.error(error);

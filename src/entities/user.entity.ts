@@ -1,9 +1,10 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { StockMovement } from "./stockMovement.entity.js";
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn("uuid")
-  id!: string; 
+  id!: string;
 
   @Column({ type: "varchar", length: 35 })
   name!: string;
@@ -11,7 +12,7 @@ export class User {
   @Column({ type: "varchar", length: 30, unique: true })
   email!: string;
 
-  @Column({ type: "int", unique: true }) 
+  @Column({ type: "int", unique: true })
   code!: number;
 
   @Column({ type: "boolean", default: false })
@@ -20,4 +21,6 @@ export class User {
   @Column({ type: "boolean", default: true })
   isActive!: boolean;
 
+  @OneToMany(() => StockMovement, (movement) => movement.employee) 
+  movements: StockMovement[] | undefined;
 }
