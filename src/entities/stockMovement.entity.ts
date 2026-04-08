@@ -36,5 +36,6 @@ export class StockMovement {
   product!: Product;
 
   @ManyToOne(() => User)
+  @JoinColumn({ name: "userId"})
   employee!: User;
 }

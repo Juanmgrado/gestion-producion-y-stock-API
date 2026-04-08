@@ -11,8 +11,8 @@ export const getAllUsers = async () => {
 };
 
 export const getuserById = async (userID: any, manager?: any) => {
-  const repo = manager ? manager.getRepository(User) : usersRepository;
-  const foundUser = await repo.findOneBy({ id: userID });
+  const repository = manager ? manager.getRepository(User) : usersRepository;
+  const foundUser = await repository.findOneBy({ id: userID });
   if (!foundUser) {
     throw new Error("User not found");
   }

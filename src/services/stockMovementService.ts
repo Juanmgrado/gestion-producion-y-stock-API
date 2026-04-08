@@ -4,10 +4,9 @@ import {
   MovementType,
   StockMovement,
 } from "../entities/stockMovement.entity.js";
-import { User } from "../entities/user.entity.js";
 import { stockMovementRepository } from "../repositories/stockMovementRepository.js";
 import { checkAndModifyStock } from "../utills/checkAndModifyStock.js";
-import { findProductById } from "./productService.js";
+import { getProductById } from "./productService.js";
 import { getuserById } from "./userService.js";
 
 export const getMovements = async () => {
@@ -61,7 +60,6 @@ export const modifyMovement = async (
   if (quantity <= 0) throw new Error("Quantity must be greater than 0");
   if (!typeMov) throw new Error("typeMov is required");
 
-  // Normalizar el typeMov (aceptar "in", "out", "IN", "OUT", etc.)
   const normalizedType = typeMov
     .toString()
     .toUpperCase()
@@ -99,14 +97,12 @@ export const modifyMovement = async (
 
     let currentStock = product.stock;
 
-    // Revertir movimiento anterior
     if (oldType === MovementType.IN) {
       currentStock -= oldQuantity;
     } else if (oldType === MovementType.OUT) {
       currentStock += oldQuantity;
     }
 
-    // Aplicar nuevo movimiento
     if (normalizedType === MovementType.OUT) {
       if (currentStock < quantity) {
         throw new Error(
@@ -124,9 +120,8 @@ export const modifyMovement = async (
       );
     }
 
-    // Actualizar movimiento
     foundMovement.quantity = quantity;
-    foundMovement.movement = normalizedType; // ← Guardamos el valor normalizado
+    foundMovement.movement = normalizedType; 
     foundMovement.employee = await getuserById(userId, manager);
 
     await movementRepository.save(foundMovement);
