@@ -5,30 +5,91 @@ import {
   StockMovement,
 } from "../entities/stockMovement.entity.js";
 import { stockMovementRepository } from "../repositories/stockMovementRepository.js";
+import { stockMovementsFilters } from "../types/filters.js";
 import { checkAndModifyStock } from "../utills/checkAndModifyStock.js";
-import { getProductById } from "./productService.js";
 import { getuserById } from "./userService.js";
 
-export const getMovements = async () => {
-  const allMovements = await stockMovementRepository.find({
-    relations: ["employee"],
-    select: {
-      id: true,
-      quantity: true,
-      note: true,
-      movement: true,
-      createdAt: true,
-      employee: {
-        name: true,
-      },
-    },
-  });
+interface MovementData {
+  quantity: number;
+  typeMov: MovementType;
+  productId: string;
+}
 
-  if (allMovements.length === 0) {
-    return "No movements registered";
+export const getMovements = async (
+  stockMovementsFilters: stockMovementsFilters = {},
+) => {
+  const qb = stockMovementRepository
+    .createQueryBuilder("movement")
+    .leftJoinAndSelect("movement.employee", "employee")
+    .leftJoinAndSelect("movement.product", "product");
+
+  if (stockMovementsFilters.productId) {
+    qb.andWhere("movement.productId = :productId", {
+      productId: stockMovementsFilters.productId,
+    });
   }
 
-  return { allMovements, num: allMovements.length };
+  if (stockMovementsFilters.employee) {
+    qb.andWhere("movement.employee = :employee", {
+      employee: stockMovementsFilters.employee,
+    });
+  }
+
+  if (stockMovementsFilters.movementType) {
+    qb.andWhere("movement.movement = :movementType", {
+      movementType: stockMovementsFilters.movementType,
+    });
+  }
+
+  if (stockMovementsFilters.startDate) {
+    qb.andWhere("movement.createdAt >= :startDate", {
+      startDate: stockMovementsFilters.startDate,
+    });
+  }
+
+  if (stockMovementsFilters.endDate) {
+    qb.andWhere("movement.createdAt <= :endDate", {
+      endDate: stockMovementsFilters.endDate,
+    });
+  }
+
+  if (stockMovementsFilters.minQuantity !== undefined) {
+    qb.andWhere("movement.quantity >= :minQuantity", {
+      minQuantity: stockMovementsFilters.minQuantity,
+    });
+  }
+
+  if (stockMovementsFilters.maxQuantity !== undefined) {
+    qb.andWhere("movement.quantity <= :maxQuantity", {
+      maxQuantity: stockMovementsFilters.maxQuantity,
+    });
+  }
+
+  if (stockMovementsFilters.note) {
+    qb.andWhere("movement.note ILIKE :note", {
+      note: `%${stockMovementsFilters.note}%`,
+    });
+  }
+
+  qb.orderBy("movement.createdAt", "DESC");
+
+  const movements = await qb.getMany();
+
+  if (movements.length === 0) {
+    return {
+      success: true,
+      message: "No movements registered",
+      count: 0,
+      data: [],
+    };
+  }
+
+  return {
+    success: true,
+    message: "Movements retrieved successfully",
+    count: movements.length,
+    data: movements,
+  };
 };
 
 export const getStockMovementById = async (movementId: any, manager?: any) => {
@@ -44,95 +105,6 @@ export const getStockMovementById = async (movementId: any, manager?: any) => {
   return foundMovement;
 };
 
-interface MovementData {
-  quantity: number;
-  typeMov: MovementType;
-  productId: string;
-}
-
-export const modifyMovement = async (
-  userId: string,
-  productId: any,
-  movementId: string,
-  { quantity, typeMov }: MovementData,
-) => {
-  if (!movementId) throw new Error("movementId is required");
-  if (quantity <= 0) throw new Error("Quantity must be greater than 0");
-  if (!typeMov) throw new Error("typeMov is required");
-
-  const normalizedType = typeMov
-    .toString()
-    .toUpperCase()
-    .trim() as MovementType;
-
-  if (!Object.values(MovementType).includes(normalizedType)) {
-    throw new Error(
-      `Invalid movement type: ${typeMov}. Valid values: ${Object.values(MovementType).join(", ")}`,
-    );
-  }
-
-  return await AppDataSource.transaction(async (manager) => {
-    const movementRepository = manager.getRepository(StockMovement);
-    const productRepository = manager.getRepository(Product);
-
-    const foundMovement = await movementRepository.findOne({
-      where: { id: movementId },
-    });
-
-    if (!foundMovement) {
-      throw new Error(`Movement not found with id: ${movementId}`);
-    }
-
-    const product = await productRepository.findOne({
-      where: { id: foundMovement.product.id },
-      lock: { mode: "pessimistic_write" },
-    });
-
-    if (!product) {
-      throw new Error("Product not found");
-    }
-
-    const oldType = foundMovement.movement;
-    const oldQuantity = foundMovement.quantity;
-
-    let currentStock = product.stock;
-
-    if (oldType === MovementType.IN) {
-      currentStock -= oldQuantity;
-    } else if (oldType === MovementType.OUT) {
-      currentStock += oldQuantity;
-    }
-
-    if (normalizedType === MovementType.OUT) {
-      if (currentStock < quantity) {
-        throw new Error(
-          `Not enough stock. Available: ${currentStock}, Requested: ${quantity}`,
-        );
-      }
-      product.stock = currentStock - quantity;
-    } else if (normalizedType === MovementType.IN) {
-      product.stock = currentStock + quantity;
-    }
-
-    if (product.stock < 0) {
-      throw new Error(
-        `Operation would result in negative stock (${product.stock})`,
-      );
-    }
-
-    foundMovement.quantity = quantity;
-    foundMovement.movement = normalizedType; 
-    foundMovement.employee = await getuserById(userId, manager);
-
-    await movementRepository.save(foundMovement);
-    await productRepository.save(product);
-
-    return {
-      message: "Movement modified successfully",
-      movement: foundMovement,
-    };
-  });
-};
 
 export const registerMovement = async (movementdata: any, userId: string) => {
   const { productId, quantity, typeMovement, note } = movementdata;
@@ -151,9 +123,13 @@ export const registerMovement = async (movementdata: any, userId: string) => {
 
     const foundUser = await getuserById(userId, manager);
 
-    const newStock = checkAndModifyStock(typeMovement, quantity, foundProduct.stock)
-    
-    foundProduct.stock = newStock
+    const newStock = checkAndModifyStock(
+      typeMovement,
+      quantity,
+      foundProduct.stock,
+    );
+
+    foundProduct.stock = newStock;
 
     const newMovement = movementRepository.create({
       quantity,

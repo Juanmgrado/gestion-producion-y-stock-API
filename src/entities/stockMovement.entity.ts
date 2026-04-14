@@ -10,8 +10,8 @@ import { Product } from "./product.entity.js";
 import { User } from "./user.entity.js";
 
 export enum MovementType {
-  IN = "in",
-  OUT = "out",
+  IN = "IN",
+  OUT = "OUT",
 }
 
 @Entity()

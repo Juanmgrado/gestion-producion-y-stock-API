@@ -1,5 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { StockMovement } from "./stockMovement.entity.js";
+import { Product } from "./product.entity.js";
 
 @Entity()
 export class User {
@@ -21,6 +22,9 @@ export class User {
   @Column({ type: "boolean", default: true })
   isActive!: boolean;
 
-  @OneToMany(() => StockMovement, (movement) => movement.employee) 
+  @OneToMany(() => StockMovement, (movement) => movement.employee)
   movements: StockMovement[] | undefined;
+
+  @OneToMany(() => Product, (product) => product.user)
+  products: Product[] | undefined;
 }
