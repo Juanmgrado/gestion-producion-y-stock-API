@@ -2,8 +2,8 @@ import "reflect-metadata";
 import express from "express";
 import { AppDataSource } from "./config/dataSource.js";
 import apiRouter from "./routes/indexs.js";
-import createProductsList from "./helpers/createProducts.js";
-import createUserAdmin from "./helpers/createUserAdmin.js";
+import createProductsList from "./utills/createProducts.js";
+import createUserAdmin from "./utills/createUserAdmin.js";
 
 const app = express();
 const PORT: number = 5004;

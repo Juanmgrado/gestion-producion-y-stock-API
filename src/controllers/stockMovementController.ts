@@ -1,47 +1,37 @@
 import { Request, Response } from "express";
 import {
   getMovements,
-  modifyMovement,
   registerMovement,
 } from "../services/stockMovementService.js";
+import { stockMovementsFilters } from "../types/filters.js";
 
 export const getMovementsController = async (req: Request, res: Response) => {
   try {
-    const allMovements = await getMovements();
-    return res.status(200).json(allMovements);
-  } catch (error) {
-    return res.status(400).json();
-  }
-};
+    const filters: stockMovementsFilters = {
+      ...(req.query.productId && { productId: req.query.productId as string }),
+      ...(req.query.employee && { employee: req.query.employee as string }),
+      ...(req.query.movementType && {
+        movementType: req.query.movementType as "IN" | "OUT",
+      }),
+      ...(req.query.startDate && { startDate: req.query.startDate as string }),
+      ...(req.query.endDate && { endDate: req.query.endDate as string }),
+      ...(req.query.minQuantity && {
+        minQuantity: Number(req.query.minQuantity),
+      }),
+      ...(req.query.maxQuantity && {
+        maxQuantity: Number(req.query.maxQuantity),
+      }),
+      ...(req.query.note && { note: req.query.note as string }),
+    };
 
-export const modifyMovementController = async (req: Request, res: Response) => {
-  try {
-    const movementId: any = req.params.id;
-    const { userId, quantity, typeMov, productId } = req.body;
+    const result = await getMovements(filters);
 
-    const newMovement = await modifyMovement(userId, productId, movementId, {
-      quantity,
-      typeMov,
-      productId,
-    });
-    return res.status(201).json(newMovement);
+    return res.status(200).json(result);
   } catch (error: any) {
-    if (error.message === "Product not found") {
-      return res.status(404).json({ message: "Product not found" });
-    }
-    if (error.message === "Movement not found") {
-      return res.status(404).json({ message: "Movement not found" });
-    }
-    if (error.message === "User not found") {
-      return res.status(404).json({ message: "User not found" });
-    }
-    if (error.message === "Incorrect type movement") {
-      return res.status(404).json({ message: "Incorrect type movement" });
-    }
-    if (error.message === "Not enought stock") {
-      return res.status(404).json({ message: "Not enought stock" });
-    }
-    return res.status(400).json(error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error al obtener los movimientos",
+    });
   }
 };
 

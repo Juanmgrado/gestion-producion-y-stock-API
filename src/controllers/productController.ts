@@ -8,7 +8,20 @@ import {
 
 export const getPtoductsController = async (req: Request, res: Response) => {
   try {
-    const productsList = await getProduct();
+    const filtersProduct = {
+      ...(req.query.name && { name: req.query.name as string }),
+      ...(req.query.minStock && { minStock: Number(req.query.minStock) }),
+      ...(req.query.maxStock && { maxStock: Number(req.query.maxStock) }),
+      ...(req.query.createdBy && { createdBy: req.query.name as string }),
+      ...(req.query.sortBy && {
+        sortBy: req.query.name as "name" | "stock" | "isActive" | "createdAt",
+      }),
+      ...(req.query.order && { order: req.query.order as "ASC" | "DESC" }),
+      ...(req.query.page && { page: Number(req.query.page) }),
+      ...(req.query.limit && { limit: Number(req.query.limit) }),
+      ...(req.query.isActive && { isActive: req.query.isActive as string }),
+    };
+    const productsList = await getProduct(filtersProduct);
     return res.status(200).json(productsList);
   } catch (error) {
     console.error(error);
@@ -18,11 +31,12 @@ export const getPtoductsController = async (req: Request, res: Response) => {
 
 export const createProductController = async (req: Request, res: Response) => {
   try {
+    const { userId } = req.body;
     const newProduct: string = req.body.name;
     if (!newProduct || typeof newProduct !== "string") {
       return res.status(400).json({ message: "Invalid product name" });
     }
-    const product = await createProduct(newProduct);
+    const product = await createProduct(userId, newProduct);
     return res
       .status(201)
       .json({ product, message: "Product created successfully" });
@@ -33,11 +47,18 @@ export const createProductController = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Product already exists" });
     }
 
+    if (error.message === "User not found") {
+      return res.status(400).json({ message: "User not found" });
+    }
+
     return res.status(500).json({ message: "INTERNAL SERVER ERROR" });
   }
 };
 
-export const findProductByIdController = async (req: Request, res: Response) => {
+export const findProductByIdController = async (
+  req: Request,
+  res: Response,
+) => {
   try {
     const productId = req.params.id;
 

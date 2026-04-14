@@ -1,7 +1,14 @@
-import { Check, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Check,
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import { StockMovement } from "./stockMovement.entity.js";
 import { StockAdjustment } from "./adjustmentStock.entity.js";
-
+import { User } from "./user.entity.js";
 
 @Entity("product")
 export class Product {
@@ -21,7 +28,7 @@ export class Product {
     default: 0,
     unsigned: true,
   })
-  @Check(`"stock" >= 0`) 
+  @Check(`"stock" >= 0`)
   stock!: number;
 
   @Column({
@@ -35,4 +42,7 @@ export class Product {
 
   @OneToMany(() => StockAdjustment, (adjustment) => adjustment.product)
   adjustments!: StockAdjustment[];
+
+  @ManyToOne(() => User, (user) => user.products)
+  user: User | undefined ;
 }

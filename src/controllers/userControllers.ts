@@ -6,10 +6,26 @@ import {
   getuserById,
   reActiveUser,
 } from "../services/userService.js";
+import { UserFilters } from "../types/filters.js";
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
-    const users = await getAllUsers();
+    const usersFilters: UserFilters = {
+      ...(req.query.name && { name: req.query.name as string }),
+      ...(req.query.email && { email: req.query.email as string }),
+      ...(req.query.code && { code: Number(req.query.code) }),
+      ...(req.query.isAdmin !== undefined && {
+        isAdmin: req.query.isAdmin === "true",
+      }),
+      ...(req.query.isActive !== undefined && {
+        isActive: req.query.isActive === "true",
+      }),
+      ...(req.query.sortBy && { sortBy: req.query.sortBy as any }),
+      ...(req.query.order && { order: req.query.order as any }),
+      ...(req.query.page && { page: Number(req.query.page) }),
+      ...(req.query.limit && { limit: Number(req.query.limit) }),
+    };
+    const users = await getAllUsers(usersFilters);
     return res.json(users);
   } catch (error) {
     return res.status(500).json({ message: "Error getting users" });
