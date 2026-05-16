@@ -1,4 +1,12 @@
-export const LIMIT_PAGE_PRODUCTS = 10;
+export const LIMIT_PAGE = 10;
 export const DEFAULT_PAGE = 1;
 export const DEFAULT_LIMIT = 10;
-export const MIN_DATA_LIST = 0
+export const EMPTY_DATA_COUNT = 0;
+export const USER_CODE_LENGTH = 4;
+export const MIN_USERNAME_LENGTH = 3;
+export const MAX_USERNAME_LENGTH = 30;
+export const MAX_USEREMAIL_LENGTH = 35;
+export const MIN_PRODUCTNAME = 5;
+export const MAX_PRODUCTNAME = 30;
+export const MIN_ADJUSTMENT_STOCK = 0;
+export const MIN_QUANTITY_IN_PRODUCT = 1

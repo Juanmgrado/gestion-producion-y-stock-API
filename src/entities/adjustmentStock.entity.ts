@@ -12,7 +12,7 @@ import { User } from "./user.entity.js";
 @Entity("stock_adjustment")
 export class StockAdjustment {
   @PrimaryGeneratedColumn("uuid")
-  id!: string;
+  uuid!: string;
 
   @ManyToOne(() => Product, (product) => product.adjustments, {
     nullable: false,
@@ -30,20 +30,20 @@ export class StockAdjustment {
   @Column({ type: "uuid" })
   adjustedById!: string;
 
-  @Column({ type: "int", default: 0 })
-  expectedStock?: number;
+  @Column({ type: "int" })
+  expectedStock!: number;
 
-  @Column({ type: "int", default: 0 })
+  @Column({ type: "int"})
   actualStock!: number;
 
-  @Column({ type: "int", default: 0 })
-  difference?: number;
+  @Column({ type: "int"})
+  difference!: number;
 
   @Column({ type: "text", nullable: true })
   reason?: string;
 
   @Column({ type: "text", nullable: true })
-  notes?: string;
+  note?: string;
 
   @CreateDateColumn()
   createdAt!: Date;

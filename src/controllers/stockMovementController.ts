@@ -3,30 +3,41 @@ import {
   getMovements,
   registerMovement,
 } from "../services/stockMovementService.js";
-import { stockMovementsFilters } from "../types/filters.js";
+import { GetMovementsFiltersDto } from "../dto/movement/getMovementsFilters.dto.js";
+import {} from "../types/interfaces.js";
+import { RegisterNewMovementRequest } from "../types/requests.js";
+import { MovementType } from "../types/enums.js";
 
 export const getMovementsController = async (req: Request, res: Response) => {
   try {
-    const filters: stockMovementsFilters = {
-      ...(req.query.productId && { productId: req.query.productId as string }),
-      ...(req.query.employee && { employee: req.query.employee as string }),
-      ...(req.query.movementType && {
-        movementType: req.query.movementType as "IN" | "OUT",
-      }),
-      ...(req.query.startDate && { startDate: req.query.startDate as string }),
-      ...(req.query.endDate && { endDate: req.query.endDate as string }),
-      ...(req.query.minQuantity && {
-        minQuantity: Number(req.query.minQuantity),
-      }),
-      ...(req.query.maxQuantity && {
-        maxQuantity: Number(req.query.maxQuantity),
-      }),
-      ...(req.query.note && { note: req.query.note as string }),
+    const getMovementsFilters: GetMovementsFiltersDto = {
+      productUuid: req.query.productId as string | undefined,
+      userUuid: req.query.employee as string | undefined,
+      note: req.query.note as string | undefined,
+
+      movementType: Object.values(MovementType).includes(
+        req.query.movementType as MovementType,
+      )
+        ? (req.query.movementType as MovementType)
+        : undefined,
+
+      startDate: req.query.startDate as string | undefined,
+      endDate: req.query.endDate as string | undefined,
+
+      minQuantity: req.query.minQuantity
+        ? Number(req.query.minQuantity)
+        : undefined,
+      maxQuantity: req.query.maxQuantity
+        ? Number(req.query.maxQuantity)
+        : undefined,
+
+      page: req.query.page ? Number(req.query.page) : undefined,
+      limit: req.query.limit ? Number(req.query.limit) : undefined,
     };
 
-    const result = await getMovements(filters);
+    const movementsList = await getMovements(getMovementsFilters);
 
-    return res.status(200).json(result);
+    return res.status(200).json(movementsList);
   } catch (error: any) {
     return res.status(500).json({
       success: false,
@@ -36,17 +47,25 @@ export const getMovementsController = async (req: Request, res: Response) => {
 };
 
 export const registerMovementController = async (
-  req: Request,
+  req: RegisterNewMovementRequest,
   res: Response,
 ) => {
   try {
-    const movementdata = req.body;
-    const { userId } = req.body;
+    const { uuid: userUuid } =
+      req.user! ?? "db2ba2f6-9645-46c7-9521-d8478ed532c3";
+    const productUuid = req.params.productUuid;
+    const newMovementData = req.body;
 
-    const newMovement = await registerMovement(movementdata, userId);
-    return res
-      .status(200)
-      .json({ newMovement, message: "Movement registered successfully" });
+    const newMovementRegistered = await registerMovement({
+      userUuid,
+      productUuid,
+      newMovementData,
+    });
+
+    return res.status(200).json({
+      newMovementRegistered,
+      message: "Movement registered successfully",
+    });
   } catch (error: any) {
     console.error(error);
     if (error.message === "User not found") {

@@ -5,7 +5,7 @@ import { Product } from "./product.entity.js";
 @Entity()
 export class User {
   @PrimaryGeneratedColumn("uuid")
-  id!: string;
+  uuid!: string;
 
   @Column({ type: "varchar", length: 35 })
   name!: string;
@@ -14,7 +14,7 @@ export class User {
   email!: string;
 
   @Column({ type: "int", unique: true })
-  code!: number;
+  password!: string;
 
   @Column({ type: "boolean", default: false })
   isAdmin!: boolean;
@@ -22,7 +22,7 @@ export class User {
   @Column({ type: "boolean", default: true })
   isActive!: boolean;
 
-  @OneToMany(() => StockMovement, (movement) => movement.employee)
+  @OneToMany(() => StockMovement, (movement) => movement.userId)
   movements: StockMovement[] | undefined;
 
   @OneToMany(() => Product, (product) => product.user)
