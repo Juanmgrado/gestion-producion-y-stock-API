@@ -1,24 +1,24 @@
-import { MovementType } from "../entities/stockMovement.entity.js";
 
-export const checkAndModifyStock = (
-  typeMov: MovementType,
+
+export function checkAndModifyStock(
+  type: "IN" | "OUT",
   quantity: number,
-  stock: any,
-) => {
+  currentStock: number,
+): number {
   if (quantity <= 0) {
     throw new Error("Quantity must be greater than 0");
   }
 
-  if (!Object.values(MovementType).includes(typeMov)) {
-    throw new Error("Incorrect type movement");
+  if (type === "IN") {
+    return currentStock + quantity;
   }
 
-  if (typeMov === MovementType.OUT) {
-    if (quantity > stock) {
+  if (type === "OUT") {
+    if (currentStock < quantity) {
       throw new Error("Not enough stock");
     }
-    return (stock -= quantity);
-  } else if (typeMov === MovementType.IN) {
-    return (stock += quantity);
+    return currentStock - quantity;
   }
-};
+
+  throw new Error("Invalid movement type");
+}

@@ -3,25 +3,36 @@ import {
   createProduct,
   deletProduct,
   getProductById,
-  getProduct,
+  getProducts,
 } from "../services/productService.js";
+import {
+} from "../types/interfaces.js";
+import { GetProductFiltersDto } from "../dto/product/getProductFilters.dto.js";
+import { DEFAULT_PAGE, LIMIT_PAGE } from "../utills/conts.js";
+import { CreateNewProductRequest } from "../types/requests.js";
 
-export const getPtoductsController = async (req: Request, res: Response) => {
+export const getPtoductsController = async (
+  req: Request,
+  res: Response,
+) => {
   try {
-    const filtersProduct = {
-      ...(req.query.name && { name: req.query.name as string }),
-      ...(req.query.minStock && { minStock: Number(req.query.minStock) }),
-      ...(req.query.maxStock && { maxStock: Number(req.query.maxStock) }),
-      ...(req.query.createdBy && { createdBy: req.query.name as string }),
-      ...(req.query.sortBy && {
-        sortBy: req.query.name as "name" | "stock" | "isActive" | "createdAt",
-      }),
-      ...(req.query.order && { order: req.query.order as "ASC" | "DESC" }),
-      ...(req.query.page && { page: Number(req.query.page) }),
-      ...(req.query.limit && { limit: Number(req.query.limit) }),
-      ...(req.query.isActive && { isActive: req.query.isActive as string }),
+    const filtersProduct: GetProductFiltersDto = {
+      name: req.query.name as string | undefined,
+      isActive:
+        req.query.isActive === "true"
+          ? true
+          : req.query.isActive === "false"
+            ? false
+            : undefined,
+      minStock: req.query.minStock ? Number(req.query.minStock) : undefined,
+      maxStock: req.query.maxStock ? Number(req.query.maxStock) : undefined,
+      createdBy: req.query.createdBy as string | undefined,
+      page: req.query.page ? Number(req.query.page) : DEFAULT_PAGE,
+      limit: req.query.limit ? Number(req.query.limit) : LIMIT_PAGE,
+      sortBy: req.query.sortBy as string | undefined,
     };
-    const productsList = await getProduct(filtersProduct);
+
+    const productsList = await getProducts(filtersProduct);
     return res.status(200).json(productsList);
   } catch (error) {
     console.error(error);
@@ -29,17 +40,20 @@ export const getPtoductsController = async (req: Request, res: Response) => {
   }
 };
 
-export const createProductController = async (req: Request, res: Response) => {
+export const createProductController = async (
+  req: CreateNewProductRequest,
+  res: Response,
+) => {
   try {
-    const { userId } = req.body;
-    const newProduct: string = req.body.name;
-    if (!newProduct || typeof newProduct !== "string") {
-      return res.status(400).json({ message: "Invalid product name" });
-    }
-    const product = await createProduct(userId, newProduct);
-    return res
-      .status(201)
-      .json({ product, message: "Product created successfully" });
+    const newProductData = req.body;
+    const { uuid: userUuid } =
+      req.user! ?? "db2ba2f6-9645-46c7-9521-d8478ed532c3";
+    const createdProduct = await createProduct({ userUuid, newProductData });
+
+    return res.status(201).json({
+      createdProduct,
+      message: "Product created successfully",
+    });
   } catch (error: any) {
     console.error(error);
 
@@ -63,7 +77,7 @@ export const findProductByIdController = async (
     const productId = req.params.id;
 
     if (!productId || typeof productId !== "string") {
-      return res.status(400).json({ message: "Insert a valid product name" });
+      return res.status(400).json({ message: "Invalid product id" });
     }
 
     const foundProduct = await getProductById(productId);
@@ -74,10 +88,10 @@ export const findProductByIdController = async (
     if (error.message === "Product not found") {
       return res.status(404).json({ message: "Product not found" });
     }
+
     return res.status(500).json({ message: "INTERNAL SERVER ERROR" });
   }
 };
-
 export const deletProductController = async (req: Request, res: Response) => {
   try {
     const productName = req.body.name;

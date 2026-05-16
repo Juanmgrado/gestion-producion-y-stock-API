@@ -13,11 +13,11 @@ import { User } from "./user.entity.js";
 @Entity("product")
 export class Product {
   @PrimaryGeneratedColumn("uuid")
-  id!: string;
+  uuid!: string;
 
   @Column({
     type: "varchar",
-    length: 255,
+    length: 30,
     nullable: false,
     unique: true,
   })

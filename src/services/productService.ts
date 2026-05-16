@@ -1,101 +1,130 @@
-import { AppDataSource } from "../config/dataSource.js";
+import { EntityManager } from "typeorm";
+import { GetProductFiltersDto } from "../dto/product/getProductFilters.dto.js";
+import { ProductResponseDto } from "../dto/product/productResponse.js";
 import { Product } from "../entities/product.entity.js";
 import { productRepository } from "../repositories/productRepository.js";
+import { PaginatedResponse } from "../types/commons.js";
+import { CreateNewProductInput } from "../types/inputs.js";
 import {
-  DEFAULT_LIMIT,
-  DEFAULT_PAGE,
-  LIMIT_PAGE_PRODUCTS,
-  MIN_DATA_LIST,
+} from "../types/interfaces.js";
+import {
+  EMPTY_DATA_COUNT,
 } from "../utills/conts.js";
+import { pagination } from "../utills/paginate.js";
 import { getuserById } from "./userService.js";
 
-export const getProduct = async (filtersProduct: any) => {
-  const {
-    name,
-    isActive,
-    minStock,
-    maxStock,
-    createdBy,
-    sortBy,
-    order,
-    page,
-    limit,
-  } = filtersProduct;
-
+export const getProducts = async (
+  filtersProduct: GetProductFiltersDto,
+): Promise<PaginatedResponse<ProductResponseDto>> => {
+  const { name, isActive, minStock, maxStock, createdBy, page, limit } =
+    filtersProduct;
   const query = productRepository
     .createQueryBuilder("product")
-    .leftJoinAndSelect("product.user", "user");
+    .leftJoin("product.user", "user")
+    .select([
+      "product.uuid",
+      "product.name",
+      "product.stock",
+      "product.isActive",
+      "user.uuid",
+    ]);
 
   if (name) {
-    query.andWhere("product.name ILIKE :name", {
-      name: `%${name}%`,
-    });
+    query.andWhere("product.name ILIKE :name", { name: `%${name}%` });
   }
 
   if (isActive !== undefined) {
-    query.andWhere("product.isActive = :isActive", {
-      isActive: isActive === "true",
-    });
+    query.andWhere("product.isActive = :isActive", { isActive });
   }
 
-  if (minStock) {
+  if (minStock !== undefined) {
     query.andWhere("product.stock >= :minStock", {
       minStock: Number(minStock),
     });
   }
 
-  if (maxStock) {
+  if (maxStock !== undefined) {
     query.andWhere("product.stock <= :maxStock", {
       maxStock: Number(maxStock),
     });
   }
 
   if (createdBy) {
-    query.andWhere("user.id = :createdBy", {
-      createdBy,
-    });
+    query.andWhere("user.id = :createdBy", { createdBy });
   }
 
-  if (sortBy) {
-    query.orderBy(`product.${sortBy}`, order === "ASC" ? "ASC" : "DESC");
+  const paginationValues = pagination(page, limit)
+
+  query.take(paginationValues.limit);
+  query.skip(paginationValues.skip);
+
+  const [productList, total] = await query.getManyAndCount();
+  const data: ProductResponseDto[] = productList.map((product) => ({
+    uuid: product.uuid,
+    name: product.name,
+    stock: product.stock,
+    isActive: product.isActive,
+  }));
+
+  if (data.length === EMPTY_DATA_COUNT) {
+    return {
+      success: true,
+      message: "No products found",
+      total: 0,
+      page: paginationValues.page,
+      limit: paginationValues.limit,
+      totalPages: Math.ceil(total / paginationValues.limit),
+      data,
+    };
   }
 
-  const pageNumber = page ? Number(page) : DEFAULT_PAGE;
-  const take = limit ? Number(limit) : DEFAULT_LIMIT;
-  const skip = (pageNumber - 1) * take;
-
-  query.take(take).skip(skip);
-
-  const productList = await query.getMany();
-
-  if (productList.length === MIN_DATA_LIST) {
-    return "No products found";
-  }
-
-  return productList;
+  return {
+    success: true,
+    message: "Products retrieved successfully",
+    total: total,
+    page: paginationValues.page,
+    limit: paginationValues.limit,
+    totalPages: Math.ceil(total / paginationValues.limit),
+    data,
+  };
 };
 
-export const createProduct = async (userId, newProduct: string) => {
-  const foundUser = await getuserById(userId);
-  const productExisting = await productRepository.findOneBy({
-    name: newProduct,
+export const createProduct = async (
+  newProductInput: CreateNewProductInput,
+): Promise<ProductResponseDto> => {
+  const foundUser = await getuserById(newProductInput.userUuid);
+  const { name, stock } = newProductInput.newProductData;
+
+  const foundProduct = await productRepository.findOneBy({
+    name: name,
   });
 
-  if (productExisting) {
+  if (foundProduct) {
     throw new Error("Product already exists");
   }
-  const product = productRepository.create({ name: newProduct });
 
-  product.user = foundUser;
+  const createdProduct = productRepository.create({
+    name: name,
+    user: foundUser,
+    ...(stock !== undefined && { stock: stock }),
+  });
 
-  await productRepository.save(product);
+  await productRepository.save(createdProduct);
 
-  return product;
+  return {
+    uuid: createdProduct.uuid,
+    name: createdProduct.name,
+    stock: createdProduct.stock,
+    isActive: createdProduct.isActive,
+  };
 };
 
-export const getProductById = async (productId: string, manager?: any) => {
+export const getProductById = async (
+  productId: string,
+  manager?: EntityManager,
+): Promise<ProductResponseDto> => {
   const repo = manager ? manager.getRepository(Product) : productRepository;
-  const foundProduct = await repo.findOneBy({ id: productId });
+  const foundProduct = await repo.findOneBy({ uuid: productId });
 
   if (!foundProduct) {
     throw new Error("Product not found");

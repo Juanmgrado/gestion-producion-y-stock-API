@@ -1,30 +1,42 @@
 import { Request, Response } from "express";
 import {
   createUser,
-  deleteUserByCode,
+  deleteUserByEmail,
   getAllUsers,
   getuserById,
   reActiveUser,
 } from "../services/userService.js";
-import { UserFilters } from "../types/filters.js";
+import { GetUserFiltersDto } from "../dto/user/getUserFilter.dto.js";
+import { Order, UserSortBy } from "../types/enums.js";
+import { DEFAULT_PAGE, LIMIT_PAGE } from "../utills/conts.js";
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
-    const usersFilters: UserFilters = {
-      ...(req.query.name && { name: req.query.name as string }),
-      ...(req.query.email && { email: req.query.email as string }),
-      ...(req.query.code && { code: Number(req.query.code) }),
-      ...(req.query.isAdmin !== undefined && {
-        isAdmin: req.query.isAdmin === "true",
-      }),
-      ...(req.query.isActive !== undefined && {
-        isActive: req.query.isActive === "true",
-      }),
-      ...(req.query.sortBy && { sortBy: req.query.sortBy as any }),
-      ...(req.query.order && { order: req.query.order as any }),
-      ...(req.query.page && { page: Number(req.query.page) }),
-      ...(req.query.limit && { limit: Number(req.query.limit) }),
-    };
+  const usersFilters: GetUserFiltersDto = {
+  name: req.query.name as string | undefined,
+  email: req.query.email as string | undefined,
+  isActive:
+    req.query.isActive === "true"
+      ? true
+      : req.query.isActive === "false"
+      ? false
+      : undefined,
+  isAdmin:
+    req.query.isAdmin === "true"
+      ? true
+      : req.query.isAdmin === "false"
+      ? false
+      : undefined,
+  sortBy: Object.values(UserSortBy).includes(req.query.sortBy as UserSortBy)
+    ? (req.query.sortBy as UserSortBy)
+    : undefined,
+  order: Object.values(Order).includes(req.query.order as Order)
+    ? (req.query.order as Order)
+    : undefined,
+  page: req.query.page ? Number(req.query.page) : DEFAULT_PAGE,
+  limit: req.query.limit ? Number(req.query.limit) : LIMIT_PAGE,
+};
+
     const users = await getAllUsers(usersFilters);
     return res.json(users);
   } catch (error) {
@@ -78,14 +90,14 @@ export const createUserController = async (req: Request, res: Response) => {
 
 export const reActiveUserController = async (req: Request, res: Response) => {
   try {
-    const { code } = req.body;
+    const { email } = req.body;
 
-    if (!code || typeof code !== "number") {
+    if (!email || typeof email !== "string") {
       return res.status(400).json({
         message: "Insert a Valid employee code",
       });
     }
-    await reActiveUser(code);
+    await reActiveUser(email);
     return res.status(200).json({ message: "User activated successfully" });
   } catch (error: any) {
     console.error("Error activating user", error);
@@ -98,23 +110,23 @@ export const reActiveUserController = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteUserByCodeController = async (
+export const deleteUserByEmailController = async (
   req: Request,
   res: Response,
 ) => {
   try {
-    const { code } = req.body;
-    if (!code) {
+    const { email } = req.body;
+    if (!email) {
       return res.status(400).json({
         message: "Insert an employee code",
       });
     }
-    if (typeof code !== "number") {
+    if (typeof email !== "string") {
       return res.status(400).json({
         message: "Please, insert a valid number code",
       });
     }
-    await deleteUserByCode(code);
+    await deleteUserByEmail(email);
     return res.status(200).json({ message: "User deleted successfully" });
   } catch (error: any) {
     console.error("Error deletting user by code:", error);

@@ -1,11 +1,19 @@
+import { EntityManager } from "typeorm";
+import { CreateUserDto } from "../dto/user/createUserDto.js";
+import { GetUserFiltersDto } from "../dto/user/getUserFilter.dto.js";
+import { UserResponseDto } from "../dto/user/userResponse.Dto.js";
 import { User } from "../entities/user.entity.js";
 import { usersRepository } from "../repositories/usersRepository.js";
-import { UserFilters } from "../types/filters.js";
-import { DEFAULT_LIMIT, DEFAULT_PAGE } from "../utills/conts.js";
+import { ApiResponse, PaginatedResponse } from "../types/commons.js";
+import { EMPTY_DATA_COUNT } from "../utills/conts.js";
+import { pagination } from "../utills/paginate.js";
+import { UserEmail } from "../types/interfaces.js";
 
-export const getAllUsers = async (filters: UserFilters = {}) => {
-  const { name, email, code, isAdmin, isActive, sortBy, order, page, limit } =
-    filters;
+export const getAllUsers = async (
+  userFilters: Partial<GetUserFiltersDto> = {},
+): Promise<PaginatedResponse<UserResponseDto>> => {
+  const { name, email, isAdmin, isActive, sortBy, order, page, limit } =
+    userFilters;
 
   const query = usersRepository
     .createQueryBuilder("user")
@@ -23,10 +31,6 @@ export const getAllUsers = async (filters: UserFilters = {}) => {
     });
   }
 
-  if (code !== undefined) {
-    query.andWhere("user.code = :code", { code });
-  }
-
   if (isAdmin !== undefined) {
     query.andWhere("user.isAdmin = :isAdmin", { isAdmin });
   }
@@ -39,21 +43,51 @@ export const getAllUsers = async (filters: UserFilters = {}) => {
     query.orderBy(`user.${sortBy}`, order === "ASC" ? "ASC" : "DESC");
   }
 
-  const pageNumber = page ?? DEFAULT_PAGE;
-  const take = limit ?? DEFAULT_LIMIT;
-  const skip = (pageNumber - 1) * take;
+  const paginationValues = pagination(page, limit);
 
-  query.take(take).skip(skip);
+  query.take(paginationValues.limit);
+  query.skip(paginationValues.skip);
 
-  const users = await query.getMany();
+  const [data, total] = await query.getManyAndCount();
 
-  return users;
+  const users: UserResponseDto[] = data.map((user) => ({
+    uuid: user.uuid,
+    name: user.name,
+    email: user.email,
+    isAdmin: user.isAdmin,
+    isActive: user.isActive,
+  }));
+
+  if (data.length === EMPTY_DATA_COUNT) {
+    return {
+      success: false,
+      message: "Not users registered",
+      total: 0,
+      page: paginationValues.page,
+      limit: paginationValues.limit,
+      totalPages: Math.ceil(total / paginationValues.limit),
+      data: users,
+    };
+  }
+
+  return {
+    success: true,
+    message: "Users retrieved successfully",
+    total,
+    page: paginationValues.page,
+    limit: paginationValues.limit,
+    totalPages: Math.ceil(total / paginationValues.limit),
+    data: users,
+  };
 };
 
-export const getuserById = async (userId: string, manager?: any) => {
-  const repo = manager ? manager.getRepository(User) : usersRepository;
+export const getuserById = async (
+  userUuid: string,
+  manager?: EntityManager,
+): Promise<UserResponseDto> => {
+  const repository = manager ? manager.getRepository(User) : usersRepository;
 
-  const foundUser = await repo.findOneBy({ id: userId });
+  const foundUser = await repository.findOneBy({ uuid: userUuid });
 
   if (!foundUser) {
     throw new Error("User not found");
@@ -62,23 +96,40 @@ export const getuserById = async (userId: string, manager?: any) => {
   return foundUser;
 };
 
-export const createUser = async (newUser: any) => {
-  const user = usersRepository.create(newUser);
+export const createUser = async (
+  newUser: CreateUserDto,
+): Promise<ApiResponse<UserResponseDto>> => {
   const { email, code } = newUser;
   const existsEmail = await usersRepository.findOneBy({ email });
   if (existsEmail) {
     throw new Error("Email already in use");
   }
-  const existsCode = await usersRepository.findOneBy({ code });
+  const existsCode = await usersRepository.findOneBy({ email });
   if (existsCode) {
     throw new Error("Code already in use");
   }
+  const user = usersRepository.create(newUser);
   await usersRepository.save(user);
-  return user;
+
+  const userResponse: UserResponseDto = {
+    uuid: user.uuid,
+    email: user.email,
+    name: user.name,
+    isAdmin: user.isAdmin,
+    isActive: user.isActive,
+  };
+
+  return {
+    success: true,
+    message: "User created successfully",
+    data: userResponse,
+  };
 };
 
-export const reActiveUser = async (code: any) => {
-  const foundUser = await usersRepository.findOneBy({ code });
+export const reActiveUser = async (
+  email: string,
+): Promise<ApiResponse<UserResponseDto>> => {
+  const foundUser = await usersRepository.findOneBy({ email });
 
   if (!foundUser) {
     throw new Error("User not found");
@@ -91,11 +142,25 @@ export const reActiveUser = async (code: any) => {
 
   await usersRepository.save(foundUser);
 
-  return { message: "User activated successfully" };
+  const userResponse: UserResponseDto = {
+    uuid: foundUser.uuid,
+    email: foundUser.email,
+    name: foundUser.name,
+    isAdmin: foundUser.isAdmin,
+    isActive: foundUser.isActive,
+  };
+
+  return {
+    success: true,
+    message: "User activated successfully",
+    data: userResponse,
+  };
 };
 
-export const deleteUserByCode = async (code: number) => {
-  const foundUser = await usersRepository.findOneBy({ code: code });
+export const deleteUserByEmail = async (
+  email: string,
+): Promise<ApiResponse<UserResponseDto>> => {
+  const foundUser = await usersRepository.findOneBy({ email: email });
   if (!foundUser) {
     throw new Error("User not found");
   }
@@ -107,5 +172,17 @@ export const deleteUserByCode = async (code: number) => {
 
   await usersRepository.save(foundUser);
 
-  return { message: "User deleted susecfully" };
+  const userResponse: UserResponseDto = {
+    uuid: foundUser.uuid,
+    email: foundUser.email,
+    name: foundUser.name,
+    isAdmin: foundUser.isAdmin,
+    isActive: foundUser.isActive,
+  };
+
+  return {
+    success: true,
+    message: "User deleted susecfully",
+    data: userResponse,
+  };
 };

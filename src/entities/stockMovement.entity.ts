@@ -8,34 +8,30 @@ import {
 } from "typeorm";
 import { Product } from "./product.entity.js";
 import { User } from "./user.entity.js";
-
-export enum MovementType {
-  IN = "IN",
-  OUT = "OUT",
-}
+import { MovementType } from "../types/enums.js";
 
 @Entity()
 export class StockMovement {
   @PrimaryGeneratedColumn("uuid")
-  id!: string;
+  uuid!: string;
 
-  @Column({ type: "int" })
+  @Column({ type: "int", nullable: false })
   quantity!: number;
 
   @Column({ type: "varchar", nullable: true, default: "" })
-  note!: String;
+  note!: string;
 
   @Column({ type: "enum", enum: MovementType, nullable: false })
-  movement!: MovementType;
+  typeMovement!: MovementType;
 
   @CreateDateColumn({ type: Date })
   createdAt!: Date;
 
   @ManyToOne(() => Product, (product) => product.movements, { nullable: false })
-  @JoinColumn({ name: "productId" })
+  @JoinColumn({ name: "productUuid" })
   product!: Product;
 
   @ManyToOne(() => User)
-  @JoinColumn({ name: "userId"})
-  employee!: User;
+  @JoinColumn({ name: "userUuid"})
+  user!: User;
 }
