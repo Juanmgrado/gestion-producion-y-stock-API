@@ -7,7 +7,6 @@ import { usersRepository } from "../repositories/usersRepository.js";
 import { ApiResponse, PaginatedResponse } from "../types/commons.js";
 import { EMPTY_DATA_COUNT } from "../utills/conts.js";
 import { pagination } from "../utills/paginate.js";
-import { UserEmail } from "../types/interfaces.js";
 
 export const getAllUsers = async (
   userFilters: Partial<GetUserFiltersDto> = {},
@@ -81,49 +80,36 @@ export const getAllUsers = async (
   };
 };
 
-export const getuserById = async (
-  userUuid: string,
+export const getUserByEmail = async (
+  userEmail: string,
   manager?: EntityManager,
-): Promise<UserResponseDto> => {
+): Promise<User> => {
   const repository = manager ? manager.getRepository(User) : usersRepository;
 
-  const foundUser = await repository.findOneBy({ uuid: userUuid });
+  const foundUser = await repository.findOneBy({ email: userEmail });
 
   if (!foundUser) {
     throw new Error("User not found");
   }
-
+  
   return foundUser;
 };
 
 export const createUser = async (
   newUser: CreateUserDto,
-): Promise<ApiResponse<UserResponseDto>> => {
-  const { email, code } = newUser;
+): Promise<UserResponseDto> => {
+  const { email } = newUser;
+  
   const existsEmail = await usersRepository.findOneBy({ email });
   if (existsEmail) {
     throw new Error("Email already in use");
   }
-  const existsCode = await usersRepository.findOneBy({ email });
-  if (existsCode) {
-    throw new Error("Code already in use");
-  }
+
   const user = usersRepository.create(newUser);
   await usersRepository.save(user);
 
-  const userResponse: UserResponseDto = {
-    uuid: user.uuid,
-    email: user.email,
-    name: user.name,
-    isAdmin: user.isAdmin,
-    isActive: user.isActive,
-  };
 
-  return {
-    success: true,
-    message: "User created successfully",
-    data: userResponse,
-  };
+  return user
 };
 
 export const reActiveUser = async (

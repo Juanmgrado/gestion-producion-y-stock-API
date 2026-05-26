@@ -11,7 +11,7 @@ import {
   EMPTY_DATA_COUNT,
 } from "../utills/conts.js";
 import { pagination } from "../utills/paginate.js";
-import { getuserById } from "./userService.js";
+import { getUserByEmail } from "./userService.js";
 
 export const getProducts = async (
   filtersProduct: GetProductFiltersDto,
@@ -92,7 +92,7 @@ export const getProducts = async (
 export const createProduct = async (
   newProductInput: CreateNewProductInput,
 ): Promise<ProductResponseDto> => {
-  const foundUser = await getuserById(newProductInput.userUuid);
+  const foundUser = await getUserByEmail(newProductInput.userEmail);
   const { name, stock } = newProductInput.newProductData;
 
   const foundProduct = await productRepository.findOneBy({

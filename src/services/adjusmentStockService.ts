@@ -8,7 +8,7 @@ import { PaginatedResponse } from "../types/commons.js";
 import { RegisterAjustmentStockInput } from "../types/inputs.js";
 import { DEFAULT_PAGE, EMPTY_DATA_COUNT, LIMIT_PAGE } from "../utills/conts.js";
 import { pagination } from "../utills/paginate.js";
-import { getuserById } from "./userService.js";
+import { getUserByEmail } from "./userService.js";
 
 export const newAdjustmentStock = async (
   registerAjustmentStockinput: RegisterAjustmentStockInput,
@@ -20,7 +20,7 @@ export const newAdjustmentStock = async (
     const { userUuid, productUuid, newRegisterAjustmentStockData } =
       registerAjustmentStockinput;
     const { newStock, reason, note } = newRegisterAjustmentStockData;
-    await getuserById(userUuid, manager);
+    await getUserByEmail(userUuid, manager);
 
     const foundProduct = await productRepository.findOne({
       where: { uuid: productUuid },

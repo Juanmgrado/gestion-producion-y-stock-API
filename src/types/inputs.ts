@@ -3,7 +3,7 @@ import { RegisterNewMovementDto } from "../dto/movement/registerNewMovement.dto.
 import { CreateProductDto } from "../dto/product/createProduct.dto.js";
 
 export interface RegisterNewMovementInput {
-  userUuid: string;
+  userEmail: string;
   productUuid: string;
   newMovementData: RegisterNewMovementDto;
 }
@@ -15,6 +15,6 @@ export interface RegisterAjustmentStockInput {
 }
 
 export interface CreateNewProductInput {
-  userUuid: string;
+  userEmail: string;
   newProductData: CreateProductDto;
 }
