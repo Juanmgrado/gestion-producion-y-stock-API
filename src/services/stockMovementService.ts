@@ -7,9 +7,9 @@ import { stockMovementRepository } from "../repositories/stockMovementRepository
 import { PaginatedResponse } from "../types/commons.js";
 import { RegisterNewMovementInput } from "../types/inputs.js";
 import { checkAndModifyStock } from "../utills/checkAndModifyStock.js";
-import { DEFAULT_PAGE, LIMIT_PAGE, EMPTY_DATA_COUNT } from "../utills/conts.js";
+import { EMPTY_DATA_COUNT } from "../utills/conts.js";
 import { pagination } from "../utills/paginate.js";
-import { getuserById } from "./userService.js";
+import { getUserByEmail } from "./userService.js";
 
 export const getMovements = async (
   stockMovementsFilters: GetMovementsFiltersDto,
@@ -81,8 +81,8 @@ export const getMovements = async (
     stockMovementsFilters.page,
     stockMovementsFilters.limit,
   );
-  
-  console.log(paginationValues.page, stockMovementsFilters.limit)
+
+  console.log(paginationValues.page, stockMovementsFilters.limit);
 
   const total = await qb.getCount();
 
@@ -130,7 +130,7 @@ export const getStockMovementById = async (movementId: any, manager?: any) => {
 export const registerMovement = async (
   newMovementInput: RegisterNewMovementInput,
 ): Promise<MovementResponse> => {
-  const { userUuid, productUuid } = newMovementInput;
+  const { userEmail, productUuid } = newMovementInput;
   const { newMovementData } = newMovementInput;
   const { quantity, typeMovement, note } = newMovementData;
 
@@ -143,7 +143,7 @@ export const registerMovement = async (
       lock: { mode: "pessimistic_write" },
     });
 
-    const foundUser = await getuserById(userUuid, manager);
+    const foundUser = await getUserByEmail(userEmail, manager);
 
     if (!foundProduct) {
       throw new Error("Product not found");

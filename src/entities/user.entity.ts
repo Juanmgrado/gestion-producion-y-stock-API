@@ -13,7 +13,7 @@ export class User {
   @Column({ type: "varchar", length: 30, unique: true })
   email!: string;
 
-  @Column({ type: "int", unique: true })
+  @Column({ type: "varchar"})
   password!: string;
 
   @Column({ type: "boolean", default: false })
@@ -22,7 +22,7 @@ export class User {
   @Column({ type: "boolean", default: true })
   isActive!: boolean;
 
-  @OneToMany(() => StockMovement, (movement) => movement.userId)
+  @OneToMany(() => StockMovement, (movement) => movement.user)
   movements: StockMovement[] | undefined;
 
   @OneToMany(() => Product, (product) => product.user)

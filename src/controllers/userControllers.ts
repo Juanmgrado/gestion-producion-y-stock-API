@@ -3,7 +3,7 @@ import {
   createUser,
   deleteUserByEmail,
   getAllUsers,
-  getuserById,
+  getUserByEmail,
   reActiveUser,
 } from "../services/userService.js";
 import { GetUserFiltersDto } from "../dto/user/getUserFilter.dto.js";
@@ -44,18 +44,18 @@ export const getUsers = async (req: Request, res: Response) => {
   }
 };
 
-export const getUserByIdController = async (req: Request, res: Response) => {
+export const getUserByEmailController = async (req: Request, res: Response) => {
   try {
-    const { id } = req.body;
-    if (!id) {
+    const { email } = req.body;
+    if (!email) {
       return res.status(400).json({
         message: "Please, insert a valid id",
       });
     }
-    const foundUser = await getuserById(id);
+    const foundUser = await getUserByEmail(email);
     return res.status(200).json(foundUser);
   } catch (error: any) {
-    console.error("Error getting user by id:", error);
+    console.error("Error getting user by uuid:", error);
 
     if (error.message === "User not found") {
       return res.status(404).json({ message: "User not found" });
@@ -68,9 +68,7 @@ export const getUserByIdController = async (req: Request, res: Response) => {
 export const createUserController = async (req: Request, res: Response) => {
   try {
     const user = req.body;
-    if (!user.name || !user.email || !user.code) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
+   
     const createdUser = await createUser(user);
     return res
       .status(200)

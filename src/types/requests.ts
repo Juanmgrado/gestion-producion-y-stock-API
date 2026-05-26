@@ -3,6 +3,7 @@ import { RegisterAjustmentStockDto } from "../dto/adjustment/registerAjustmentSt
 import { RegisterNewMovementDto } from "../dto/movement/registerNewMovement.dto.js";
 import { CreateProductDto } from "../dto/product/createProduct.dto.js";
 import { ProductUuid, UserUuid } from "./commons.js";
+import { JwtPayload } from "jsonwebtoken";
 
 export interface CreateNewProductRequest extends Request {
   body: CreateProductDto;

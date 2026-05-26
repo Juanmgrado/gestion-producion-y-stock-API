@@ -5,6 +5,7 @@ import apiRouter from "./routes/indexs.js";
 import createProductsList from "./utills/createProducts.js";
 import createUserAdmin from "./utills/createUserAdmin.js";
 import { env } from "./config/dotenv.js";
+import cookieParser from "cookie-parser";
 
 const app = express();
 app.use(express.json());
@@ -12,7 +13,7 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.json({ message: "Server on" });
 });
-
+app.use(cookieParser());
 app.use("/api", apiRouter);
 try {
   await AppDataSource.initialize();

@@ -3,15 +3,16 @@ import {
   IsEmail,
   MinLength,
   MaxLength,
-  Length,
-  Matches,
+  Validate,
+  IsBoolean,
 } from "class-validator";
 import {
   MAX_USEREMAIL_LENGTH,
   MAX_USERNAME_LENGTH,
   MIN_USERNAME_LENGTH,
-  USER_CODE_LENGTH,
+  USER_PASSWORD_MIN_LENGTH,
 } from "../../utills/conts.js";
+import { MatchPasswordConstraint } from "../../validators/matchPassword.validator.js";
 
 export class CreateUserDto {
   @IsString()
@@ -23,8 +24,15 @@ export class CreateUserDto {
   @MaxLength(MAX_USEREMAIL_LENGTH)
   email!: string;
 
+  @IsBoolean()
+  isAdmin!: boolean;
+
   @IsString()
-  @Length(USER_CODE_LENGTH, USER_CODE_LENGTH)
-  @Matches(/^\d{4}$/)
-  code!: number;
+  @MinLength(USER_PASSWORD_MIN_LENGTH, { message: "Password must have unless 6 caracters"})
+  password!: string;
+
+  @IsString()
+  @MinLength(USER_PASSWORD_MIN_LENGTH)
+  @Validate(MatchPasswordConstraint)
+  repeatPassword!: string;
 }
