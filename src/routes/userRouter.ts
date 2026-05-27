@@ -13,23 +13,13 @@ import { verifyAdmin } from "../middelwares/verifyIsAdmin.middleware.js";
 
 const userrouter = Router();
 
-userrouter.get("/", verifyToken, verifyAdmin, getUsers);
-userrouter.get("/getuser", verifyToken, verifyAdmin, getUserByEmailController);
+userrouter.get("/", getUsers);
+userrouter.get("/getuser", getUserByEmailController);
 userrouter.post(
   "/createUser",
   validateDto(CreateUserDto),
   createUserController,
 );
-userrouter.post(
-  "/reactive-user",
-  verifyToken,
-  verifyAdmin,
-  reActiveUserController,
-);
-userrouter.post(
-  "/delete-user",
-  verifyToken,
-  verifyAdmin,
-  deleteUserByEmailController,
-);
+userrouter.post("/reactive-user", reActiveUserController);
+userrouter.post("/delete-user", deleteUserByEmailController);
 export default userrouter;

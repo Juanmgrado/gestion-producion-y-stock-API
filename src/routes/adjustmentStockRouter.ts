@@ -12,16 +12,12 @@ const adjustmentStockRouter = Router();
 
 adjustmentStockRouter.post(
   "/stock-adjustments/:productId",
-  verifyToken,
-  verifyAdmin,
   validateDto(RegisterAjustmentStockDto),
   newAdjustmentStockController,
 );
 
 adjustmentStockRouter.get(
   "/",
-  verifyToken,
-  verifyAdmin,
   getAdjustmentStockController,
 );
 

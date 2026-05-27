@@ -9,10 +9,9 @@ import { verifyToken } from "../middelwares/verifyToken.middleware.js";
 
 const stockMovement = Router();
 
-stockMovement.get("/", verifyToken, getMovementsController);
+stockMovement.get("/", getMovementsController);
 stockMovement.post(
   "/registerMovement/:productId",
-  verifyToken,
   validateDto(RegisterNewMovementDto),
   registerMovementController,
 );
