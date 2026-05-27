@@ -12,24 +12,13 @@ import { verifyAdmin } from "../middelwares/verifyIsAdmin.middleware.js";
 
 const productRouter = Router();
 
-productRouter.get("/get-products", verifyToken, getPtoductsController);
-productRouter.get(
-  "/get-productById/:id",
-  verifyToken,
-  findProductByIdController,
-);
+productRouter.get("/get-products", getPtoductsController);
+productRouter.get("/get-productById/:id", findProductByIdController);
 productRouter.post(
   "/create-product",
-  verifyToken,
-  verifyAdmin,
   validateDto(CreateProductDto),
   createProductController,
 );
-productRouter.post(
-  "/delete-product",
-  verifyToken,
-  verifyAdmin,
-  deletProductController,
-);
+productRouter.post("/delete-product", deletProductController);
 
 export default productRouter;
