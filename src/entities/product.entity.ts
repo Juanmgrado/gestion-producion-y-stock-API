@@ -3,11 +3,8 @@ import {
   Column,
   Entity,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { StockMovement } from "./stockMovement.entity.js";
-import { StockAdjustment } from "./adjustmentStock.entity.js";
 import { User } from "./user.entity.js";
 
 @Entity("product")
@@ -37,12 +34,6 @@ export class Product {
   })
   isActive!: boolean;
 
-  @OneToMany(() => StockMovement, (movement) => movement.product)
-  movements!: StockMovement[];
-
-  @OneToMany(() => StockAdjustment, (adjustment) => adjustment.product)
-  adjustments!: StockAdjustment[];
-
-  @ManyToOne(() => User, (user) => user.products)
-  user: User | undefined ;
+  @ManyToOne(() => User)
+  user?: User;
 }

@@ -1,5 +1,6 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { loginUser, registerUser } from "../services/auth.service.js";
+import { AppError } from "../middelwares/errorsHandler.js";
 import { generateAuthTokens } from "../utills/generateAuthTokens.js";
 import { JwtPayload } from "jsonwebtoken";
 import jwt from "jsonwebtoken";
@@ -7,7 +8,11 @@ import { AuthUser } from "../types/types.js";
 import { getUserByEmail } from "../services/userService.js";
 import { clearAuthCookies } from "../utills/clearAuthCookies.js";
 
-export const registerController = async (req: Request, res: Response) => {
+export const registerController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const authTokens = await registerUser(req.body);
 
@@ -27,11 +32,15 @@ export const registerController = async (req: Request, res: Response) => {
       .status(201)
       .json({ message: "User registered successfully" });
   } catch (error) {
-    res.status(400).json({ message: (error as Error).message });
+    next(error);
   }
 };
 
-export const loginController = async (req: Request, res: Response) => {
+export const loginController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const authTokens = await loginUser(req.body);
 
@@ -51,11 +60,11 @@ export const loginController = async (req: Request, res: Response) => {
       .status(201)
       .json({ message: "User logued" });
   } catch (error) {
-    res.status(400).json({ message: (error as Error).message });
+    next(error);
   }
 };
 
-export const refreshTokenController = async (req: Request, res: Response) => {
+export const refreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const refreshToken = req.cookies.refreshToken;
 
@@ -71,7 +80,7 @@ export const refreshTokenController = async (req: Request, res: Response) => {
     const user = await getUserByEmail(decodedToken.email);
 
     if (!user.isActive) {
-      throw new Error("User is not active");
+      throw new AppError("User is not active", 403);
     }
 
     const newTokens = generateAuthTokens(decodedToken);
@@ -91,7 +100,7 @@ export const refreshTokenController = async (req: Request, res: Response) => {
       })
       .json({ message: "Token refreshed" });
   } catch (error) {
-    return res.status(401).json({ message: "Invalid refresh token" });
+    next(error);
   }
 };
 

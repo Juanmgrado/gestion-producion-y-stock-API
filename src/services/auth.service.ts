@@ -1,5 +1,6 @@
 import { CreateUserDto } from "../dto/user/createUserDto.js";
 import { LoginUserDto } from "../dto/user/loginUser.dto.js";
+import { AppError } from "../middelwares/errorsHandler.js";
 import { AuthTokens, JwtPayload } from "../types/types.js";
 import { SALT_ROUNDS } from "../utills/conts.js";
 import { createUser, getUserByEmail } from "./userService.js";
@@ -30,16 +31,16 @@ export const loginUser = async (
   const user = await getUserByEmail(loginUserDto.email);
 
   if (!user) {
-    throw new Error("User or password incorrect");
+    throw new AppError("User or password incorrect", 401);
   }
 
-  if(!user.isActive){
-    throw new Error("The user is not active. Contact an admin.")
+  if (!user.isActive) {
+    throw new AppError("The user is not active. Contact an admin.", 403);
   }
 
   const matchPassword = await bcrypt.compare(password, user.password);
   if (!matchPassword) {
-    throw new Error("User or password incorrect");
+    throw new AppError("User or password incorrect", 401);
   }
 
   const authTokens: AuthTokens = generateAuthTokens(user);

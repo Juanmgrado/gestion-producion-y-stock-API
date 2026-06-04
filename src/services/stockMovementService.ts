@@ -3,6 +3,7 @@ import { GetMovementsFiltersDto } from "../dto/movement/getMovementsFilters.dto.
 import { MovementResponse } from "../dto/movement/newMovementResponse.js";
 import { Product } from "../entities/product.entity.js";
 import { StockMovement } from "../entities/stockMovement.entity.js";
+import { AppError } from "../middelwares/errorsHandler.js";
 import { stockMovementRepository } from "../repositories/stockMovementRepository.js";
 import { PaginatedResponse } from "../types/commons.js";
 import { RegisterNewMovementInput } from "../types/inputs.js";
@@ -121,7 +122,7 @@ export const getStockMovementById = async (movementId: any, manager?: any) => {
 
   const foundMovement = await repo.findOneBy({ id: movementId });
   if (!foundMovement) {
-    throw new Error("Movement not found");
+    throw new AppError("Movement not found", 404);
   }
 
   return foundMovement;
@@ -146,7 +147,7 @@ export const registerMovement = async (
     const foundUser = await getUserByEmail(userEmail, manager);
 
     if (!foundProduct) {
-      throw new Error("Product not found");
+      throw new AppError("Product not found", 404);
     }
 
     const newStock = checkAndModifyStock(

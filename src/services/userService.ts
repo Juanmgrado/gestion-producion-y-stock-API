@@ -7,6 +7,7 @@ import { usersRepository } from "../repositories/usersRepository.js";
 import { ApiResponse, PaginatedResponse } from "../types/commons.js";
 import { EMPTY_DATA_COUNT } from "../utills/conts.js";
 import { pagination } from "../utills/paginate.js";
+import { AppError } from "../middelwares/errorsHandler.js";
 
 export const getAllUsers = async (
   userFilters: Partial<GetUserFiltersDto> = {},
@@ -14,9 +15,7 @@ export const getAllUsers = async (
   const { name, email, isAdmin, isActive, sortBy, order, page, limit } =
     userFilters;
 
-  const query = usersRepository
-    .createQueryBuilder("user")
-    .leftJoinAndSelect("user.products", "product");
+  const query = usersRepository.createQueryBuilder("user");
 
   if (name) {
     query.andWhere("user.name ILIKE :name", {
@@ -89,7 +88,7 @@ export const getUserByEmail = async (
   const foundUser = await repository.findOneBy({ email: userEmail });
 
   if (!foundUser) {
-    throw new Error("User not found");
+    throw new AppError("User not found", 404);
   }
   
   return foundUser;
@@ -102,7 +101,7 @@ export const createUser = async (
   
   const existsEmail = await usersRepository.findOneBy({ email });
   if (existsEmail) {
-    throw new Error("Email already in use");
+    throw new AppError("Email already in use", 409);
   }
 
   const user = usersRepository.create(newUser);
@@ -118,11 +117,11 @@ export const reActiveUser = async (
   const foundUser = await usersRepository.findOneBy({ email });
 
   if (!foundUser) {
-    throw new Error("User not found");
+    throw new AppError("User not found", 404);
   }
 
   if (foundUser.isActive === true) {
-    throw new Error("This user is already active");
+    throw new AppError("This user is already active", 409);
   }
   foundUser.isActive = true;
 
@@ -148,11 +147,11 @@ export const deleteUserByEmail = async (
 ): Promise<ApiResponse<UserResponseDto>> => {
   const foundUser = await usersRepository.findOneBy({ email: email });
   if (!foundUser) {
-    throw new Error("User not found");
+    throw new AppError("User not found", 404);
   }
 
   if (foundUser.isActive === false) {
-    throw new Error("This user is already deleted");
+    throw new AppError("This user is already deleted", 400);
   }
   foundUser.isActive = false;
 

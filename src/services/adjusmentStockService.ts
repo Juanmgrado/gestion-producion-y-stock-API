@@ -3,6 +3,7 @@ import { AdjustmentResponseDto } from "../dto/adjustment/adjustmentResponse.dto.
 import { GetAjustmentStockFiltersDto } from "../dto/adjustment/getAjusmentStock.dto.js";
 import { StockAdjustment } from "../entities/adjustmentStock.entity.js";
 import { Product } from "../entities/product.entity.js";
+import { AppError } from "../middelwares/errorsHandler.js";
 import { adjustmentStocklRepository } from "../repositories/adjusmentStockRepository.js";
 import { PaginatedResponse } from "../types/commons.js";
 import { RegisterAjustmentStockInput } from "../types/inputs.js";
@@ -28,7 +29,7 @@ export const newAdjustmentStock = async (
     });
   
     if (!foundProduct) {
-      throw new Error("Product not found");
+      throw new AppError("Product not found", 404);
     }
 
     const expectedStock = foundProduct.stock;

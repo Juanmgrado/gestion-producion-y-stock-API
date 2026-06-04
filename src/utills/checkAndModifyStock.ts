@@ -1,4 +1,4 @@
-
+import { AppError } from "../middelwares/errorsHandler.js";
 
 export function checkAndModifyStock(
   type: "IN" | "OUT",
@@ -6,7 +6,7 @@ export function checkAndModifyStock(
   currentStock: number,
 ): number {
   if (quantity <= 0) {
-    throw new Error("Quantity must be greater than 0");
+    throw new AppError("Quantity must be greater than 0", 400);
   }
 
   if (type === "IN") {
@@ -15,10 +15,10 @@ export function checkAndModifyStock(
 
   if (type === "OUT") {
     if (currentStock < quantity) {
-      throw new Error("Not enough stock");
+      throw new AppError("Not enough stock", 400);
     }
     return currentStock - quantity;
   }
 
-  throw new Error("Invalid movement type");
+  throw new AppError("Invalid movement type", 400);
 }

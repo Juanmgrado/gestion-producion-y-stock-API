@@ -14,7 +14,7 @@ export class StockAdjustment {
   @PrimaryGeneratedColumn("uuid")
   uuid!: string;
 
-  @ManyToOne(() => Product, (product) => product.adjustments, {
+  @ManyToOne(() => Product, {
     nullable: false,
   })
   @JoinColumn({ name: "productId" })
