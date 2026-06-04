@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { getAdjustmentsStock, newAdjustmentStock } from "../services/adjusmentStockService.js";
 import { RegisterAjustmentStockRequest } from "../types/requests.js";
 import { GetAjustmentStockFiltersDto } from "../dto/adjustment/getAjusmentStock.dto.js";
@@ -6,6 +6,7 @@ import { GetAjustmentStockFiltersDto } from "../dto/adjustment/getAjusmentStock.
 export const newAdjustmentStockController = async (
   req: RegisterAjustmentStockRequest,
   res: Response,
+  next: NextFunction,
 ) => {
   try {
     const productUuid = req.params.productUuid;
@@ -21,17 +22,15 @@ export const newAdjustmentStockController = async (
       message: "Adjustment registered successfully",
       data: newAdjustStock,
     });
-  } catch (error: any) {
-    console.error(error);
-    return res.status(400).json({
-      message: error.message || "Error al ajustar stock",
-    });
+  } catch (error) {
+    next(error);
   }
 };
 
 export const getAdjustmentStockController = async (
   req: Request,
   res: Response,
+  next: NextFunction,
 ) => {
   try {
     const AdjustmentStockFilters: GetAjustmentStockFiltersDto = {
@@ -60,7 +59,7 @@ export const getAdjustmentStockController = async (
       AdjustmentStockFilters,
     );
     res.status(200).json(adjustmentMovementStockList);
-  } catch (error: any) {
-    res.status(404).json();
+  } catch (error) {
+    next(error);
   }
 };

@@ -27,7 +27,7 @@ export class StockMovement {
   @CreateDateColumn({ type: Date })
   createdAt!: Date;
 
-  @ManyToOne(() => Product, (product) => product.movements, { nullable: false })
+  @ManyToOne(() => Product, { nullable: false })
   @JoinColumn({ name: "productUuid" })
   product!: Product;
 

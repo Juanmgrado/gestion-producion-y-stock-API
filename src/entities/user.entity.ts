@@ -1,6 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { StockMovement } from "./stockMovement.entity.js";
-import { Product } from "./product.entity.js";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class User {
@@ -13,7 +11,7 @@ export class User {
   @Column({ type: "varchar", length: 30, unique: true })
   email!: string;
 
-  @Column({ type: "varchar"})
+  @Column({ type: "varchar" })
   password!: string;
 
   @Column({ type: "boolean", default: false })
@@ -21,10 +19,4 @@ export class User {
 
   @Column({ type: "boolean", default: true })
   isActive!: boolean;
-
-  @OneToMany(() => StockMovement, (movement) => movement.user)
-  movements: StockMovement[] | undefined;
-
-  @OneToMany(() => Product, (product) => product.user)
-  products: Product[] | undefined;
 }

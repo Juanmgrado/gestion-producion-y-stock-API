@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import {
   createUser,
   deleteUserByEmail,
@@ -10,41 +10,49 @@ import { GetUserFiltersDto } from "../dto/user/getUserFilter.dto.js";
 import { Order, UserSortBy } from "../types/enums.js";
 import { DEFAULT_PAGE, LIMIT_PAGE } from "../utills/conts.js";
 
-export const getUsers = async (req: Request, res: Response) => {
+export const getUsers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-  const usersFilters: GetUserFiltersDto = {
-  name: req.query.name as string | undefined,
-  email: req.query.email as string | undefined,
-  isActive:
-    req.query.isActive === "true"
-      ? true
-      : req.query.isActive === "false"
-      ? false
-      : undefined,
-  isAdmin:
-    req.query.isAdmin === "true"
-      ? true
-      : req.query.isAdmin === "false"
-      ? false
-      : undefined,
-  sortBy: Object.values(UserSortBy).includes(req.query.sortBy as UserSortBy)
-    ? (req.query.sortBy as UserSortBy)
-    : undefined,
-  order: Object.values(Order).includes(req.query.order as Order)
-    ? (req.query.order as Order)
-    : undefined,
-  page: req.query.page ? Number(req.query.page) : DEFAULT_PAGE,
-  limit: req.query.limit ? Number(req.query.limit) : LIMIT_PAGE,
-};
+    const usersFilters: GetUserFiltersDto = {
+      name: req.query.name as string | undefined,
+      email: req.query.email as string | undefined,
+      isActive:
+        req.query.isActive === "true"
+          ? true
+          : req.query.isActive === "false"
+            ? false
+            : undefined,
+      isAdmin:
+        req.query.isAdmin === "true"
+          ? true
+          : req.query.isAdmin === "false"
+            ? false
+            : undefined,
+      sortBy: Object.values(UserSortBy).includes(req.query.sortBy as UserSortBy)
+        ? (req.query.sortBy as UserSortBy)
+        : undefined,
+      order: Object.values(Order).includes(req.query.order as Order)
+        ? (req.query.order as Order)
+        : undefined,
+      page: req.query.page ? Number(req.query.page) : DEFAULT_PAGE,
+      limit: req.query.limit ? Number(req.query.limit) : LIMIT_PAGE,
+    };
 
     const users = await getAllUsers(usersFilters);
     return res.json(users);
   } catch (error) {
-    return res.status(500).json({ message: "Error getting users" });
+    next(error);
   }
 };
 
-export const getUserByEmailController = async (req: Request, res: Response) => {
+export const getUserByEmailController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const { email } = req.body;
     if (!email) {
@@ -55,38 +63,32 @@ export const getUserByEmailController = async (req: Request, res: Response) => {
     const foundUser = await getUserByEmail(email);
     return res.status(200).json(foundUser);
   } catch (error: any) {
-    console.error("Error getting user by uuid:", error);
-
-    if (error.message === "User not found") {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    return res.status(500).json({ message: "INTERNAL SERVER ERROR" });
+    next(error);
   }
 };
 
-export const createUserController = async (req: Request, res: Response) => {
+export const createUserController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const user = req.body;
-   
+
     const createdUser = await createUser(user);
     return res
       .status(200)
       .json({ createdUser, message: "User created successfully" });
-  } catch (error: any) {
-    console.error("Error creatting user", error);
-
-    if (error.message === "Email already in use") {
-      return res.status(409).json({ message: "Email already in use" });
-    }
-    if (error.message === "Code already in use") {
-      return res.status(409).json({ message: "Code already in use" });
-    }
-    res.status(500).json({ message: "INTERNAL SERVER ERROR" });
+  } catch (error) {
+    next(error);
   }
 };
 
-export const reActiveUserController = async (req: Request, res: Response) => {
+export const reActiveUserController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const { email } = req.body;
 
@@ -98,19 +100,14 @@ export const reActiveUserController = async (req: Request, res: Response) => {
     await reActiveUser(email);
     return res.status(200).json({ message: "User activated successfully" });
   } catch (error: any) {
-    console.error("Error activating user", error);
-    if (error.message === "User not found") {
-      return res.status(404).json({ message: "User not found" });
-    }
-    if (error.message === "This user is already active") {
-      res.status(400).json({ message: "This user is already active" });
-    }
+    next(error);
   }
 };
 
 export const deleteUserByEmailController = async (
   req: Request,
   res: Response,
+  next: NextFunction,
 ) => {
   try {
     const { email } = req.body;
@@ -126,16 +123,7 @@ export const deleteUserByEmailController = async (
     }
     await deleteUserByEmail(email);
     return res.status(200).json({ message: "User deleted successfully" });
-  } catch (error: any) {
-    console.error("Error deletting user by code:", error);
-
-    if (error.message === "User not found") {
-      return res.status(404).json(error.message);
-    }
-
-    if (error.message === "This user was already deleted") {
-      return res.status(404).json(error.message);
-    }
-    return res.status(500).json({ message: "INTERNAL SERVER ERROR" });
+  } catch (error) {
+    next(error);
   }
 };

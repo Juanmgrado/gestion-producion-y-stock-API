@@ -1,4 +1,4 @@
-import { Response, Request } from "express";
+import { NextFunction, Response, Request } from "express";
 import {
   createProduct,
   deletProduct,
@@ -14,6 +14,7 @@ import { CreateNewProductRequest } from "../types/requests.js";
 export const getPtoductsController = async (
   req: Request,
   res: Response,
+  next: NextFunction,
 ) => {
   try {
     const filtersProduct: GetProductFiltersDto = {
@@ -35,43 +36,33 @@ export const getPtoductsController = async (
     const productsList = await getProducts(filtersProduct);
     return res.status(200).json(productsList);
   } catch (error) {
-    console.error(error);
-    return res.status(400).json(error);
+    next(error);
   }
 };
 
 export const createProductController = async (
   req: CreateNewProductRequest,
   res: Response,
+  next: NextFunction,
 ) => {
   try {
     const newProductData = req.body;
-    const { uuid: userUuid } =
-      req.user! ?? "db2ba2f6-9645-46c7-9521-d8478ed532c3";
-    const createdProduct = await createProduct({ userUuid, newProductData });
+    const { email: userEmail } = req.user!;
+    const createdProduct = await createProduct({ userEmail, newProductData });
 
     return res.status(201).json({
       createdProduct,
       message: "Product created successfully",
     });
-  } catch (error: any) {
-    console.error(error);
-
-    if (error.message === "Product already exists") {
-      return res.status(400).json({ message: "Product already exists" });
-    }
-
-    if (error.message === "User not found") {
-      return res.status(400).json({ message: "User not found" });
-    }
-
-    return res.status(500).json({ message: "INTERNAL SERVER ERROR" });
+  } catch (error) {
+    next(error);
   }
 };
 
 export const findProductByIdController = async (
   req: Request,
   res: Response,
+  next: NextFunction,
 ) => {
   try {
     const productId = req.params.id;
@@ -82,17 +73,15 @@ export const findProductByIdController = async (
 
     const foundProduct = await getProductById(productId);
     return res.status(200).json(foundProduct);
-  } catch (error: any) {
-    console.error(error);
-
-    if (error.message === "Product not found") {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    return res.status(500).json({ message: "INTERNAL SERVER ERROR" });
+  } catch (error) {
+    next(error);
   }
 };
-export const deletProductController = async (req: Request, res: Response) => {
+export const deletProductController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const productName = req.body.name;
 
@@ -104,13 +93,7 @@ export const deletProductController = async (req: Request, res: Response) => {
     return res
       .status(201)
       .json({ deletedProduct, message: "Product deleted successfully" });
-  } catch (error: any) {
-    console.error(error);
-
-    if (error.message === "Product not found") {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    return res.status(500).json({ message: "INTERNAL SERVER ERROR" });
+  } catch (error) {
+    next(error);
   }
 };

@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import {
   getMovements,
   registerMovement,
@@ -8,7 +8,11 @@ import {} from "../types/interfaces.js";
 import { RegisterNewMovementRequest } from "../types/requests.js";
 import { MovementType } from "../types/enums.js";
 
-export const getMovementsController = async (req: Request, res: Response) => {
+export const getMovementsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const getMovementsFilters: GetMovementsFiltersDto = {
       productUuid: req.query.productId as string | undefined,
@@ -38,26 +42,23 @@ export const getMovementsController = async (req: Request, res: Response) => {
     const movementsList = await getMovements(getMovementsFilters);
 
     return res.status(200).json(movementsList);
-  } catch (error: any) {
-    return res.status(500).json({
-      success: false,
-      message: error.message || "Error al obtener los movimientos",
-    });
+  } catch (error) {
+    next(error);
   }
 };
 
 export const registerMovementController = async (
   req: RegisterNewMovementRequest,
   res: Response,
+  next: NextFunction,
 ) => {
   try {
-    const { uuid: userUuid } =
-      req.user! ?? "db2ba2f6-9645-46c7-9521-d8478ed532c3";
+    const { email: userEmail } = req.user!;
     const productUuid = req.params.productUuid;
     const newMovementData = req.body;
 
     const newMovementRegistered = await registerMovement({
-      userUuid,
+      userEmail,
       productUuid,
       newMovementData,
     });
@@ -66,25 +67,7 @@ export const registerMovementController = async (
       newMovementRegistered,
       message: "Movement registered successfully",
     });
-  } catch (error: any) {
-    console.error(error);
-    if (error.message === "User not found") {
-      return res.status(404).json({ message: "User not found" });
-    }
-    if (error.message === "Quantity must be greater than 0") {
-      return res
-        .status(404)
-        .json({ message: "Quantity must be greater than 0" });
-    }
-    if (error.message === "Product not found") {
-      return res.status(404).json({ message: "Product not found" });
-    }
-    if (error.message === "Not enough stock") {
-      return res.status(400).json({ message: "Not enough stock" });
-    }
-    if (error.message === "Incorrect type movement") {
-      return res.status(404).json({ message: "Incorrect type movement" });
-    }
-    return res.status(500).json({ message: "INTERNAL SERVER ERROR" });
+  } catch (error) {
+    next(error);
   }
 };

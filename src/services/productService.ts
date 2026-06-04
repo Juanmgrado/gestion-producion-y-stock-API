@@ -2,6 +2,7 @@ import { EntityManager } from "typeorm";
 import { GetProductFiltersDto } from "../dto/product/getProductFilters.dto.js";
 import { ProductResponseDto } from "../dto/product/productResponse.js";
 import { Product } from "../entities/product.entity.js";
+import { AppError } from "../middelwares/errorsHandler.js";
 import { productRepository } from "../repositories/productRepository.js";
 import { PaginatedResponse } from "../types/commons.js";
 import { CreateNewProductInput } from "../types/inputs.js";
@@ -100,7 +101,7 @@ export const createProduct = async (
   });
 
   if (foundProduct) {
-    throw new Error("Product already exists");
+    throw new AppError("Product already exists", 409);
   }
 
   const createdProduct = productRepository.create({
@@ -127,7 +128,7 @@ export const getProductById = async (
   const foundProduct = await repo.findOneBy({ uuid: productId });
 
   if (!foundProduct) {
-    throw new Error("Product not found");
+    throw new AppError("Product not found", 404);
   }
 
   return foundProduct;
@@ -137,7 +138,7 @@ export const deletProduct = async (name: string) => {
   const foundProduct = await productRepository.findOneBy({ name: name });
 
   if (!foundProduct) {
-    throw new Error("Product not found");
+    throw new AppError("Product not found", 404);
   }
 
   foundProduct.isActive = false;
