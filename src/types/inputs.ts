@@ -1,9 +1,10 @@
 import { RegisterAjustmentStockDto } from "../dto/adjustment/registerAjustmentStock.dto.js";
 import { RegisterNewMovementDto } from "../dto/movement/registerNewMovement.dto.js";
 import { CreateProductDto } from "../dto/product/createProduct.dto.js";
+import { ChangePasswordDto } from "../dto/user/changePassword.dto.js";
 
 export interface RegisterNewMovementInput {
-  userEmail: string;
+  userUuid: string;
   productUuid: string;
   newMovementData: RegisterNewMovementDto;
 }
@@ -17,4 +18,9 @@ export interface RegisterAjustmentStockInput {
 export interface CreateNewProductInput {
   userEmail: string;
   newProductData: CreateProductDto;
+}
+
+export interface ChangeUserPasswordInput {
+  email: string;
+  changePasswordData: ChangePasswordDto;
 }

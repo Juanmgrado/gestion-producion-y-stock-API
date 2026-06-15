@@ -1,40 +1,15 @@
 import { NextFunction, Request, Response } from "express";
-import { loginUser, registerUser } from "../services/auth.service.js";
+import { loginUser } from "../services/auth.service.js";
 import { AppError } from "../middelwares/errorsHandler.js";
 import { generateAuthTokens } from "../utills/generateAuthTokens.js";
-import { JwtPayload } from "jsonwebtoken";
 import jwt from "jsonwebtoken";
 import { AuthUser } from "../types/types.js";
 import { getUserByEmail } from "../services/userService.js";
 import { clearAuthCookies } from "../utills/clearAuthCookies.js";
-
-export const registerController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const authTokens = await registerUser(req.body);
-
-    res
-      .cookie("accessToken", authTokens.accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-        maxAge: 15 * 60 * 1000,
-      })
-      .cookie("refreshToken", authTokens.refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-        maxAge: 72 * 60 * 60 * 1000,
-      })
-      .status(201)
-      .json({ message: "User registered successfully" });
-  } catch (error) {
-    next(error);
-  }
-};
+import {
+  ACCESS_TOKEN_COOKIE_OPTIONS,
+  REFRESH_TOKEN_COOKIE_OPTIONS,
+} from "../utills/cookieOptions.js";
 
 export const loginController = async (
   req: Request,
@@ -45,31 +20,33 @@ export const loginController = async (
     const authTokens = await loginUser(req.body);
 
     res
-      .cookie("accessToken", authTokens.accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-        maxAge: 15 * 60 * 1000,
-      })
-      .cookie("refreshToken", authTokens.refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-        maxAge: 72 * 60 * 60 * 1000,
-      })
-      .status(201)
-      .json({ message: "User logued" });
+      .cookie(
+        "accessToken",
+        authTokens.data.accessToken,
+        ACCESS_TOKEN_COOKIE_OPTIONS,
+      )
+      .cookie(
+        "refreshToken",
+        authTokens.data.refreshToken,
+        REFRESH_TOKEN_COOKIE_OPTIONS,
+      )
+      .status(200)
+      .json({ message: "Logged in successfully" });
   } catch (error) {
     next(error);
   }
 };
 
-export const refreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
+export const refreshTokenController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
-      return res.status(401).json({ message: "No refresh token" });
+      throw new AppError("No refresh token", 401);
     }
 
     const decodedToken = jwt.verify(
@@ -86,18 +63,12 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
     const newTokens = generateAuthTokens(decodedToken);
 
     res
-      .cookie("accessToken", newTokens.accessToken, {
-        httpOnly: true,
-        secure: false,
-        sameSite: "lax",
-        maxAge: 15 * 60 * 1000,
-      })
-      .cookie("refreshToken", newTokens.refreshToken, {
-        httpOnly: true,
-        secure: false,
-        sameSite: "lax",
-        maxAge: 72 * 60 * 60 * 1000,
-      })
+      .cookie("accessToken", newTokens.accessToken, ACCESS_TOKEN_COOKIE_OPTIONS)
+      .cookie(
+        "refreshToken",
+        newTokens.refreshToken,
+        REFRESH_TOKEN_COOKIE_OPTIONS,
+      )
       .json({ message: "Token refreshed" });
   } catch (error) {
     next(error);

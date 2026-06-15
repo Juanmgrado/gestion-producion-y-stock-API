@@ -7,8 +7,6 @@ import { productRepository } from "../repositories/productRepository.js";
 import { PaginatedResponse } from "../types/commons.js";
 import { CreateNewProductInput } from "../types/inputs.js";
 import {
-} from "../types/interfaces.js";
-import {
   EMPTY_DATA_COUNT,
 } from "../utills/conts.js";
 import { pagination } from "../utills/paginate.js";
@@ -134,7 +132,7 @@ export const getProductById = async (
   return foundProduct;
 };
 
-export const deletProduct = async (name: string) => {
+export const deleteProduct = async (name: string) => {
   const foundProduct = await productRepository.findOneBy({ name: name });
 
   if (!foundProduct) {

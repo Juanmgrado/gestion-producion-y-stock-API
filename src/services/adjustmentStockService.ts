@@ -4,16 +4,16 @@ import { GetAjustmentStockFiltersDto } from "../dto/adjustment/getAjusmentStock.
 import { StockAdjustment } from "../entities/adjustmentStock.entity.js";
 import { Product } from "../entities/product.entity.js";
 import { AppError } from "../middelwares/errorsHandler.js";
-import { adjustmentStocklRepository } from "../repositories/adjusmentStockRepository.js";
-import { PaginatedResponse } from "../types/commons.js";
+import { adjustmentStocklRepository } from "../repositories/adjustmentStockRepository.js";
+import { ApiResponse, PaginatedResponse } from "../types/commons.js";
 import { RegisterAjustmentStockInput } from "../types/inputs.js";
-import { DEFAULT_PAGE, EMPTY_DATA_COUNT, LIMIT_PAGE } from "../utills/conts.js";
+import { EMPTY_DATA_COUNT } from "../utills/conts.js";
 import { pagination } from "../utills/paginate.js";
-import { getUserByEmail } from "./userService.js";
+import { getUserByUuid } from "./userService.js";
 
 export const newAdjustmentStock = async (
   registerAjustmentStockinput: RegisterAjustmentStockInput,
-): Promise<AdjustmentResponseDto> => {
+): Promise<ApiResponse<AdjustmentResponseDto>> => {
   return await AppDataSource.transaction(async (manager) => {
     const productRepository = manager.getRepository(Product);
     const adjustmentRepository = manager.getRepository(StockAdjustment);
@@ -21,13 +21,13 @@ export const newAdjustmentStock = async (
     const { userUuid, productUuid, newRegisterAjustmentStockData } =
       registerAjustmentStockinput;
     const { newStock, reason, note } = newRegisterAjustmentStockData;
-    await getUserByEmail(userUuid, manager);
+    await getUserByUuid(userUuid, manager);
 
     const foundProduct = await productRepository.findOne({
       where: { uuid: productUuid },
       lock: { mode: "pessimistic_write" },
     });
-  
+
     if (!foundProduct) {
       throw new AppError("Product not found", 404);
     }
@@ -35,13 +35,13 @@ export const newAdjustmentStock = async (
     const expectedStock = foundProduct.stock;
     const difference = newStock - foundProduct.stock;
     const newAdjustment = adjustmentRepository.create({
-      productId: foundProduct.uuid,
+      productUuid: foundProduct.uuid,
       expectedStock,
       actualStock: newStock,
       difference,
       reason: reason ?? "Auditory",
       note: note ?? "No note",
-      adjustedById: "db2ba2f6-9645-46c7-9521-d8478ed532c3",
+      adjustedByUuid: userUuid,
     });
 
     foundProduct.stock = newStock;
@@ -50,13 +50,17 @@ export const newAdjustmentStock = async (
     await adjustmentRepository.save(newAdjustment);
 
     return {
-      uuid: newAdjustment.uuid,
-      productId: newAdjustment.productId,
-      expectedStock,
-      actualStock: newAdjustment.actualStock,
-      difference,
-      createdAt: newAdjustment.createdAt.toISOString(),
-      adjustedById: newAdjustment.adjustedById
+      success: true,
+      message: "Adjustment registered successfully",
+      data: {
+        uuid: newAdjustment.uuid,
+        productId: newAdjustment.productUuid,
+        expectedStock,
+        actualStock: newAdjustment.actualStock,
+        difference,
+        createdAt: newAdjustment.createdAt.toISOString(),
+        adjustedById: newAdjustment.adjustedByUuid,
+      },
     };
   });
 };
@@ -74,7 +78,7 @@ export const getAdjustmentsStock = async (
       "adjustment.expectedStock",
       "adjustment.actualStock",
       "adjustment.createdAt",
-      "adjustment.adjustedById", 
+      "adjustment.adjustedByUuid",
       "product.uuid",
       "product.name",
       "user.uuid",
@@ -82,8 +86,8 @@ export const getAdjustmentsStock = async (
     ]);
 
   if (adjustmentFilters.productId) {
-    query.andWhere("adjustment.productId = :productId", {
-      productId: adjustmentFilters.productId,
+    query.andWhere("adjustment.productUuid = :productUuid", {
+      productUuid: adjustmentFilters.productId,
     });
   }
 
@@ -93,11 +97,11 @@ export const getAdjustmentsStock = async (
     });
   }
 
-if (adjustmentFilters.difference !== undefined) {
-  query.andWhere("adjustment.difference = :difference", {
-    difference: adjustmentFilters.difference,
-  });
-}
+  if (adjustmentFilters.difference !== undefined) {
+    query.andWhere("adjustment.difference = :difference", {
+      difference: adjustmentFilters.difference,
+    });
+  }
 
   if (adjustmentFilters.expectedStock !== undefined) {
     query.andWhere("adjustment.expectedStock = :expectedStock", {
@@ -121,27 +125,27 @@ if (adjustmentFilters.difference !== undefined) {
     adjustmentFilters.page,
     adjustmentFilters.limit,
   );
-  
+
   query.take(paginationValues.limit);
   query.skip(paginationValues.skip);
 
   const [adjustments, total] = await query.getManyAndCount();
 
-  if(adjustments.length === EMPTY_DATA_COUNT){
+  if (adjustments.length === EMPTY_DATA_COUNT) {
     return {
       success: false,
       message: "No adjustments registered",
       total: 0,
-      page: 0,
-      limit: 0,
+      page: paginationValues.page,
+      limit: paginationValues.limit,
       totalPages: Math.ceil(total / paginationValues.limit),
       data: [],
     };
   }
   const data: AdjustmentResponseDto[] = adjustments.map((adj) => ({
     uuid: adj.uuid,
-    productId: adj.product.uuid || adj.productId,
-    adjustedById: adj.adjustedById,
+    productId: adj.product.uuid || adj.productUuid,
+    adjustedById: adj.adjustedByUuid,
     expectedStock: adj.expectedStock,
     actualStock: adj.actualStock,
     difference: adj.difference,
@@ -154,6 +158,33 @@ if (adjustmentFilters.difference !== undefined) {
     page: paginationValues.page,
     limit: paginationValues.limit,
     totalPages: Math.ceil(total / paginationValues.limit),
+    data: data,
+  };
+};
+
+export const getAdjustmentByUuid = async (
+  adjustmentUuid: string,
+): Promise<ApiResponse<AdjustmentResponseDto>> => {
+  const foundAdjustment = await adjustmentStocklRepository.findOneBy({
+    uuid: adjustmentUuid,
+  });
+
+  if (!foundAdjustment) {
+    throw new AppError("Adjustment movement not found", 404);
+  }
+  const data: AdjustmentResponseDto = {
+    uuid: foundAdjustment.uuid,
+    productId: foundAdjustment.productUuid,
+    adjustedById: foundAdjustment.adjustedByUuid,
+    expectedStock: foundAdjustment.expectedStock,
+    actualStock: foundAdjustment.actualStock,
+    difference: foundAdjustment.difference,
+    createdAt: foundAdjustment.createdAt.toISOString(),
+  };
+
+  return {
+    success: true,
+    message: "Adjustment found successfully",
     data: data,
   };
 };

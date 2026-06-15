@@ -17,18 +17,18 @@ export class StockAdjustment {
   @ManyToOne(() => Product, {
     nullable: false,
   })
-  @JoinColumn({ name: "productId" })
+  @JoinColumn({ name: "productUuid" })
   product!: Product;
 
   @ManyToOne(() => User, { nullable: false })
-  @JoinColumn({ name: "adjustedById" })
+  @JoinColumn({ name: "adjustedByUuid" })
   adjustedBy!: User;
 
   @Column({ type: "uuid" })
-  productId!: string;
+  productUuid!: string;
 
   @Column({ type: "uuid" })
-  adjustedById!: string;
+  adjustedByUuid!: string;
 
   @Column({ type: "int" })
   expectedStock!: number;

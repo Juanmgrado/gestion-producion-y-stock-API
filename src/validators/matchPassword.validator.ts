@@ -6,13 +6,13 @@ import {
 
 @ValidatorConstraint({ name: "MatchPassword", async: false })
 export class MatchPasswordConstraint implements ValidatorConstraintInterface {
-  validate(repeatPassword: string, args: ValidationArguments) {
+  validate(value: string, args: ValidationArguments) {
+    const [relatedPropertyName] = args.constraints;
     const object = args.object as any;
-
-    return object.password === repeatPassword;
+    return object[relatedPropertyName] === value;
   }
 
-  defaultMessage() {
+  defaultMessage(args: ValidationArguments) {
     return "Passwords do not match";
   }
 }

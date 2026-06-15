@@ -10,7 +10,7 @@ import { RegisterNewMovementInput } from "../types/inputs.js";
 import { checkAndModifyStock } from "../utills/checkAndModifyStock.js";
 import { EMPTY_DATA_COUNT } from "../utills/conts.js";
 import { pagination } from "../utills/paginate.js";
-import { getUserByEmail } from "./userService.js";
+import { getUserByUuid } from "./userService.js";
 
 export const getMovements = async (
   stockMovementsFilters: GetMovementsFiltersDto,
@@ -131,7 +131,7 @@ export const getStockMovementById = async (movementId: any, manager?: any) => {
 export const registerMovement = async (
   newMovementInput: RegisterNewMovementInput,
 ): Promise<MovementResponse> => {
-  const { userEmail, productUuid } = newMovementInput;
+  const { userUuid, productUuid } = newMovementInput;
   const { newMovementData } = newMovementInput;
   const { quantity, typeMovement, note } = newMovementData;
 
@@ -144,7 +144,7 @@ export const registerMovement = async (
       lock: { mode: "pessimistic_write" },
     });
 
-    const foundUser = await getUserByEmail(userEmail, manager);
+    const foundUser = await getUserByUuid(userUuid, manager);
 
     if (!foundProduct) {
       throw new AppError("Product not found", 404);

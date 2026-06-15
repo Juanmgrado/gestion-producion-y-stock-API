@@ -18,7 +18,7 @@ import { SALT_ROUNDS } from "./conts.js";
       .values([
         {
           name: "Admin",
-          email: "Saw",
+          email: "user@admind.com",
           password: await bcrypt.hash(adminPassword, SALT_ROUNDS),
           isAdmin: true,
         },

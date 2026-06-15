@@ -2,7 +2,7 @@ import { Request } from "express";
 import { RegisterAjustmentStockDto } from "../dto/adjustment/registerAjustmentStock.dto.js";
 import { RegisterNewMovementDto } from "../dto/movement/registerNewMovement.dto.js";
 import { CreateProductDto } from "../dto/product/createProduct.dto.js";
-import { ProductUuid } from "./commons.js";
+import { AdjustmentUuid, ProductUuid, UserUuid } from "./commons.js";
 import { JwtPayload } from "./types.js";
 
 export interface CreateNewProductRequest extends Request {
@@ -24,4 +24,16 @@ export interface RegisterAjustmentStockRequest extends Request {
   };
   body: RegisterAjustmentStockDto;
   user?: JwtPayload;
+}
+
+export interface GetAjustmentStockRequest extends Request {
+  params: {
+    adjustmentUuid: AdjustmentUuid;
+  };
+}
+
+export interface GetUserByUuidRequest extends Request {
+  params: {
+    uuid: UserUuid;
+  };
 }

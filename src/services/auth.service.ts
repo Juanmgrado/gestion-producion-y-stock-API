@@ -1,38 +1,17 @@
-import { CreateUserDto } from "../dto/user/createUserDto.js";
 import { LoginUserDto } from "../dto/user/loginUser.dto.js";
 import { AppError } from "../middelwares/errorsHandler.js";
-import { AuthTokens, JwtPayload } from "../types/types.js";
-import { SALT_ROUNDS } from "../utills/conts.js";
-import { createUser, getUserByEmail } from "./userService.js";
+import { AuthTokens } from "../types/types.js";
+import { getUserByEmail } from "./userService.js";
 import * as bcrypt from "bcrypt";
 import { generateAuthTokens } from "../utills/generateAuthTokens.js";
-
-export const registerUser = async (
-  registerDto: CreateUserDto,
-): Promise<AuthTokens> => {
-  const { password } = registerDto;
-
-  const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-
-  const userToCreate = { ...registerDto, password: hashedPassword };
-
-  const user = await createUser(userToCreate);
-
-  const authTokens: AuthTokens = generateAuthTokens(user);
-
-  return authTokens;
-};
+import { ApiResponse } from "../types/commons.js";
 
 export const loginUser = async (
   loginUserDto: LoginUserDto,
-): Promise<AuthTokens> => {
+): Promise<ApiResponse<AuthTokens>> => {
   const { password } = loginUserDto;
 
   const user = await getUserByEmail(loginUserDto.email);
-
-  if (!user) {
-    throw new AppError("User or password incorrect", 401);
-  }
 
   if (!user.isActive) {
     throw new AppError("The user is not active. Contact an admin.", 403);
@@ -45,5 +24,5 @@ export const loginUser = async (
 
   const authTokens: AuthTokens = generateAuthTokens(user);
 
-  return authTokens;
+  return { success: true, message: "Logged in successfully", data: authTokens };
 };

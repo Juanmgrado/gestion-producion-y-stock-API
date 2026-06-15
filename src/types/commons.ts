@@ -1,6 +1,7 @@
 export type Uuid = string;
 export type UserUuid = Uuid;
 export type ProductUuid = Uuid;
+export type AdjustmentUuid = Uuid
 
 export type PaginatedResponse<T> = {
   success: boolean;

@@ -1,14 +1,21 @@
 import { NextFunction, Request, Response } from "express";
 import {
+  changeUserPassword,
   createUser,
   deleteUserByEmail,
   getAllUsers,
-  getUserByEmail,
+  getUserByUuid,
   reActiveUser,
+  updateUser,
 } from "../services/userService.js";
 import { GetUserFiltersDto } from "../dto/user/getUserFilter.dto.js";
 import { Order, UserSortBy } from "../types/enums.js";
 import { DEFAULT_PAGE, LIMIT_PAGE } from "../utills/conts.js";
+import { ACCESS_TOKEN_COOKIE_OPTIONS, REFRESH_TOKEN_COOKIE_OPTIONS } from "../utills/cookieOptions.js";
+import { UpdateUserDto } from "../dto/user/updateUser.dto.js";
+import { ChangePasswordDto } from "../dto/user/changePassword.dto.js";
+import { AppError } from "../middelwares/errorsHandler.js";
+import { GetUserByUuidRequest } from "../types/requests.js";
 
 export const getUsers = async (
   req: Request,
@@ -37,8 +44,8 @@ export const getUsers = async (
       order: Object.values(Order).includes(req.query.order as Order)
         ? (req.query.order as Order)
         : undefined,
-      page: req.query.page ? Number(req.query.page) : DEFAULT_PAGE,
-      limit: req.query.limit ? Number(req.query.limit) : LIMIT_PAGE,
+      page: parseInt(req.query.page as string, 10) || DEFAULT_PAGE,
+      limit: parseInt(req.query.limit as string, 10) || LIMIT_PAGE,
     };
 
     const users = await getAllUsers(usersFilters);
@@ -48,20 +55,25 @@ export const getUsers = async (
   }
 };
 
-export const getUserByEmailController = async (
-  req: Request,
+export const getUserByUuidController = async (
+  req: GetUserByUuidRequest,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({
-        message: "Please, insert a valid id",
-      });
-    }
-    const foundUser = await getUserByEmail(email);
-    return res.status(200).json(foundUser);
+    const { uuid } = req.params;
+    const user = await getUserByUuid(uuid);
+    return res.status(200).json({
+      success: true,
+      message: "User found successfully",
+      data: {
+        uuid: user.uuid,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
+        isActive: user.isActive,
+      },
+    });
   } catch (error: any) {
     next(error);
   }
@@ -75,10 +87,8 @@ export const createUserController = async (
   try {
     const user = req.body;
 
-    const createdUser = await createUser(user);
-    return res
-      .status(200)
-      .json({ createdUser, message: "User created successfully" });
+    const result = await createUser(user);
+    return res.status(201).json(result);
   } catch (error) {
     next(error);
   }
@@ -91,14 +101,8 @@ export const reActiveUserController = async (
 ) => {
   try {
     const { email } = req.body;
-
-    if (!email || typeof email !== "string") {
-      return res.status(400).json({
-        message: "Insert a Valid employee code",
-      });
-    }
-    await reActiveUser(email);
-    return res.status(200).json({ message: "User activated successfully" });
+    const result = await reActiveUser(email);
+    return res.status(200).json(result);
   } catch (error: any) {
     next(error);
   }
@@ -110,19 +114,59 @@ export const deleteUserByEmailController = async (
   next: NextFunction,
 ) => {
   try {
-    const { email } = req.body;
+    const { email } = req.query;
     if (!email) {
-      return res.status(400).json({
-        message: "Insert an employee code",
-      });
+      throw new AppError("Please, insert a valid email", 400);
     }
-    if (typeof email !== "string") {
-      return res.status(400).json({
-        message: "Please, insert a valid number code",
-      });
+    const result = await deleteUserByEmail(email as string);
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateUserController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const updateUserData: UpdateUserDto = req.body;
+    const { newTokens, ...result } = await updateUser(
+      updateUserData,
+      req.user!,
+    );
+
+    if (newTokens) {
+      res
+        .cookie("accessToken", newTokens.accessToken, ACCESS_TOKEN_COOKIE_OPTIONS)
+        .cookie("refreshToken", newTokens.refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
     }
-    await deleteUserByEmail(email);
-    return res.status(200).json({ message: "User deleted successfully" });
+
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const changeUserPasswordController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { email } = req.user!;
+    const changePasswordData: ChangePasswordDto = req.body;
+    const { newTokens, ...result } = await changeUserPassword({
+      email,
+      changePasswordData,
+    });
+
+    res
+      .cookie("accessToken", newTokens!.accessToken, ACCESS_TOKEN_COOKIE_OPTIONS)
+      .cookie("refreshToken", newTokens!.refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
+
+    return res.status(200).json(result);
   } catch (error) {
     next(error);
   }
