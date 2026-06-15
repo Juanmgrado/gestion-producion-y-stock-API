@@ -32,6 +32,7 @@ export const env = {
   DB_USERNAME: process.env.DB_USERNAME ?? DB_USERNAME,
   DB_PASSWORD: process.env.DB_PASSWORD!,
   DB_DATABASE: process.env.DB_DATABASE ?? DB_NAME,
+  CORS_ORIGIN: process.env.CORS_ORIGIN ?? "http://localhost:5173",
   JWT_SECRET: process.env.JWT_SECRET!,
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD!,
 };
