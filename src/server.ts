@@ -6,10 +6,14 @@ import createProductsList from "./utills/createProducts.js";
 import createUserAdmin from "./utills/createUserAdmin.js";
 import { env } from "./config/dotenv.js";
 import cookieParser from "cookie-parser";
+import morgan from "morgan";
 import { errorHandler } from "./middelwares/errorsHandler.js";
 
 const app = express();
 
+app.use(
+  morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"),
+);
 app.use(express.json());
 app.use(cookieParser());
 
@@ -32,5 +36,6 @@ try {
 
 } catch (error) {
   console.error("Error during Data Source initialization", error);
+  process.exit(1);
 }
 

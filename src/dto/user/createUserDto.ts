@@ -28,11 +28,11 @@ export class CreateUserDto {
   isAdmin!: boolean;
 
   @IsString()
-  @MinLength(USER_PASSWORD_MIN_LENGTH, { message: "Password must have unless 6 caracters"})
+  @MinLength(USER_PASSWORD_MIN_LENGTH, { message: "Password must be at least 6 characters long" })
   password!: string;
 
   @IsString()
   @MinLength(USER_PASSWORD_MIN_LENGTH)
-  @Validate(MatchPasswordConstraint)
+  @Validate(MatchPasswordConstraint, ["password"])
   repeatPassword!: string;
 }

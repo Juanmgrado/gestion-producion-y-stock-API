@@ -12,6 +12,6 @@ const router = Router();
 router.use("/user", verifyToken, verifyAdmin, userrouter);
 router.use("/product", verifyToken, productRouter);
 router.use("/movements", verifyToken, stockMovementRouter);
-router.use("/adjustment", verifyToken, adjustmentStockRouter);
+router.use("/adjustment", verifyToken, verifyAdmin, adjustmentStockRouter);
 router.use("/auth", authRouter);
 export default router;

@@ -1,17 +1,15 @@
 import { NextFunction, Response, Request } from "express";
 import {
   createProduct,
-  deletProduct,
+  deleteProduct,
   getProductById,
   getProducts,
 } from "../services/productService.js";
-import {
-} from "../types/interfaces.js";
 import { GetProductFiltersDto } from "../dto/product/getProductFilters.dto.js";
 import { DEFAULT_PAGE, LIMIT_PAGE } from "../utills/conts.js";
 import { CreateNewProductRequest } from "../types/requests.js";
 
-export const getPtoductsController = async (
+export const getProductsController = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -77,7 +75,7 @@ export const findProductByIdController = async (
     next(error);
   }
 };
-export const deletProductController = async (
+export const deleteProductController = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -89,9 +87,9 @@ export const deletProductController = async (
       return res.status(400).json({ message: "Insert a valid product name" });
     }
 
-    const deletedProduct = await deletProduct(productName);
+    const deletedProduct = await deleteProduct(productName);
     return res
-      .status(201)
+      .status(204)
       .json({ deletedProduct, message: "Product deleted successfully" });
   } catch (error) {
     next(error);

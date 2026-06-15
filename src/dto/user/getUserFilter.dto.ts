@@ -8,6 +8,6 @@ export type GetUserFiltersDto = {
   isActive: boolean | undefined;
   sortBy: UserSortBy | undefined;
   order: Order | undefined;
-  page: number | 1;
-  limit: number | 10;
+  page: number;
+  limit: number;
 };

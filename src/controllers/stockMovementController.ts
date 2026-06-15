@@ -4,7 +4,6 @@ import {
   registerMovement,
 } from "../services/stockMovementService.js";
 import { GetMovementsFiltersDto } from "../dto/movement/getMovementsFilters.dto.js";
-import {} from "../types/interfaces.js";
 import { RegisterNewMovementRequest } from "../types/requests.js";
 import { MovementType } from "../types/enums.js";
 
@@ -53,12 +52,12 @@ export const registerMovementController = async (
   next: NextFunction,
 ) => {
   try {
-    const { email: userEmail } = req.user!;
+    const { uuid: userUuid } = req.user!;
     const productUuid = req.params.productUuid;
     const newMovementData = req.body;
 
     const newMovementRegistered = await registerMovement({
-      userEmail,
+      userUuid,
       productUuid,
       newMovementData,
     });

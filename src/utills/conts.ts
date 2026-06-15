@@ -14,4 +14,7 @@ export const HOST = 3000;
 export const LOCALHOST = "localhost";
 export const DB_HOST = 5432;
 export const DB_USERNAME = "postgres";
+export const DB_NAME = "postgres";
 export const SALT_ROUNDS = 10;
+export const ACCESS_TOKEN_COOKIE_MAX_AGE = 15 * 60 * 1000;
+export const REFRESH_TOKEN_COOKIE_MAX_AGE = 72 * 60 * 60 * 1000;

@@ -1,6 +1,10 @@
 import { NextFunction, Request, Response } from "express";
-import { getAdjustmentsStock, newAdjustmentStock } from "../services/adjusmentStockService.js";
-import { RegisterAjustmentStockRequest } from "../types/requests.js";
+import {
+  getAdjustmentByUuid,
+  getAdjustmentsStock,
+  newAdjustmentStock,
+} from "../services/adjustmentStockService.js";
+import { GetAjustmentStockRequest, RegisterAjustmentStockRequest } from "../types/requests.js";
 import { GetAjustmentStockFiltersDto } from "../dto/adjustment/getAjusmentStock.dto.js";
 
 export const newAdjustmentStockController = async (
@@ -12,16 +16,13 @@ export const newAdjustmentStockController = async (
     const productUuid = req.params.productUuid;
     const newRegisterAjustmentStockData = req.body;
     const { uuid: userUuid } = req.user!;
-    const newAdjustStock = await newAdjustmentStock({
+    const result = await newAdjustmentStock({
       userUuid,
       productUuid,
       newRegisterAjustmentStockData,
     });
 
-    return res.status(201).json({
-      message: "Adjustment registered successfully",
-      data: newAdjustStock,
-    });
+    return res.status(201).json(result);
   } catch (error) {
     next(error);
   }
@@ -55,10 +56,24 @@ export const getAdjustmentStockController = async (
       limit: req.query.limit ? Number(req.query.limit) : undefined,
     };
 
-    const adjustmentMovementStockList = await getAdjustmentsStock(
+    const result = await getAdjustmentsStock(
       AdjustmentStockFilters,
     );
-    res.status(200).json(adjustmentMovementStockList);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAdjustmentByUuidController = async (
+  req: GetAjustmentStockRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { adjustmentUuid } = req.params;
+    const result = await getAdjustmentByUuid(adjustmentUuid);
+    return res.status(200).json(result);
   } catch (error) {
     next(error);
   }
