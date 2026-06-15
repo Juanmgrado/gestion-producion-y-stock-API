@@ -4,11 +4,9 @@ import { ProductResponseDto } from "../dto/product/productResponse.js";
 import { Product } from "../entities/product.entity.js";
 import { AppError } from "../middelwares/errorsHandler.js";
 import { productRepository } from "../repositories/productRepository.js";
-import { PaginatedResponse } from "../types/commons.js";
-import { CreateNewProductInput } from "../types/inputs.js";
-import {
-  EMPTY_DATA_COUNT,
-} from "../utills/conts.js";
+import { ApiResponse, PaginatedResponse } from "../types/commons.js";
+import { CreateNewProductInput, UpdateProductInput } from "../types/inputs.js";
+import { EMPTY_DATA_COUNT } from "../utills/conts.js";
 import { pagination } from "../utills/paginate.js";
 import { getUserByEmail } from "./userService.js";
 
@@ -52,7 +50,7 @@ export const getProducts = async (
     query.andWhere("user.id = :createdBy", { createdBy });
   }
 
-  const paginationValues = pagination(page, limit)
+  const paginationValues = pagination(page, limit);
 
   query.take(paginationValues.limit);
   query.skip(paginationValues.skip);
@@ -118,12 +116,12 @@ export const createProduct = async (
   };
 };
 
-export const getProductById = async (
-  productId: string,
+export const getProductByUuid = async (
+  productUuid: string,
   manager?: EntityManager,
 ): Promise<ProductResponseDto> => {
   const repo = manager ? manager.getRepository(Product) : productRepository;
-  const foundProduct = await repo.findOneBy({ uuid: productId });
+  const foundProduct = await repo.findOneBy({ uuid: productUuid });
 
   if (!foundProduct) {
     throw new AppError("Product not found", 404);
@@ -144,4 +142,33 @@ export const deleteProduct = async (name: string) => {
   const deletedProduct = await productRepository.save(foundProduct);
 
   return deletedProduct;
+};
+
+export const updateProduct = async (
+  updateProductInput: UpdateProductInput,
+): Promise<ApiResponse<ProductResponseDto>> => {
+  const { uuid } = updateProductInput;
+  const { name } = updateProductInput.updateProductData;
+  const foundProduct = await getProductByUuid(uuid);
+
+  if (name !== foundProduct.name) {
+    const nameInUse = await productRepository.findOneBy({ name });
+    if (nameInUse) {
+      throw new AppError("Product already exists", 409);
+    }
+    foundProduct.name = name;
+  }
+
+  await productRepository.save(foundProduct);
+
+  return {
+    success: true,
+    message: "Product updated successfully",
+    data: {
+      uuid: foundProduct.uuid,
+      name: foundProduct.name,
+      stock: foundProduct.stock,
+      isActive: foundProduct.isActive,
+    },
+  };
 };

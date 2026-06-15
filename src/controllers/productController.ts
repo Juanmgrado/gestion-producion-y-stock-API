@@ -2,12 +2,16 @@ import { NextFunction, Response, Request } from "express";
 import {
   createProduct,
   deleteProduct,
-  getProductById,
+  getProductByUuid,
   getProducts,
+  updateProduct,
 } from "../services/productService.js";
 import { GetProductFiltersDto } from "../dto/product/getProductFilters.dto.js";
 import { DEFAULT_PAGE, LIMIT_PAGE } from "../utills/conts.js";
-import { CreateNewProductRequest } from "../types/requests.js";
+import {
+  CreateNewProductRequest,
+  UpdateProductRequest,
+} from "../types/requests.js";
 
 export const getProductsController = async (
   req: Request,
@@ -69,7 +73,7 @@ export const findProductByIdController = async (
       return res.status(400).json({ message: "Invalid product id" });
     }
 
-    const foundProduct = await getProductById(productId);
+    const foundProduct = await getProductByUuid(productId);
     return res.status(200).json(foundProduct);
   } catch (error) {
     next(error);
@@ -91,6 +95,23 @@ export const deleteProductController = async (
     return res
       .status(204)
       .json({ deletedProduct, message: "Product deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateProductController = async (
+  req: UpdateProductRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const uuid = req.params.uuid;
+    const updateProductData = req.body;
+
+    const updatedProduct = await updateProduct({ uuid, updateProductData });
+
+    return res.status(200).json(updatedProduct);
   } catch (error) {
     next(error);
   }
