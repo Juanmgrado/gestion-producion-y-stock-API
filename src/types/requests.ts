@@ -4,6 +4,7 @@ import { RegisterNewMovementDto } from "../dto/movement/registerNewMovement.dto.
 import { CreateProductDto } from "../dto/product/createProduct.dto.js";
 import { AdjustmentUuid, ProductUuid, UserUuid } from "./commons.js";
 import { JwtPayload } from "./types.js";
+import { UpdateProductDto } from "../dto/product/updateProduct.dto.js";
 
 export interface CreateNewProductRequest extends Request {
   body: CreateProductDto;
@@ -36,4 +37,12 @@ export interface GetUserByUuidRequest extends Request {
   params: {
     uuid: UserUuid;
   };
+}
+
+
+export interface UpdateProductRequest extends Request {
+  params: {
+    uuid: ProductUuid;
+  };
+  body: UpdateProductDto;
 }
