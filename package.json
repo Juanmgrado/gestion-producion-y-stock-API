@@ -1,34 +1,65 @@
 {
   "name": "gestion-producion-y-stock-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "REST API for production and inventory management, built with Express 5, TypeScript and TypeORM (PostgreSQL).",
   "main": "server.ts",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "users:list": "tsx src/scripts/list-users.ts",
+    "migration:generate": "typeorm-ts-node-esm migration:generate -d src/config/dataSource.ts",
+    "migration:create": "typeorm-ts-node-esm migration:create",
+    "migration:run": "typeorm-ts-node-esm migration:run -d src/config/dataSource.ts",
+    "migration:revert": "typeorm-ts-node-esm migration:revert -d src/config/dataSource.ts"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Juanmgrado/gestion-producion-y-stock-API.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "express",
+    "typescript",
+    "typeorm",
+    "postgresql",
+    "rest-api",
+    "jwt",
+    "inventory-management"
+  ],
+  "author": "Juan Martin Grado",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Juanmgrado/gestion-producion-y-stock-API/issues"
   },
   "homepage": "https://github.com/Juanmgrado/gestion-producion-y-stock-API#readme",
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^8.2.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.11.0",
     "pg": "^8.20.0",
     "reflect-metadata": "^0.2.2",
+    "swagger-ui-express": "^5.0.1",
     "typeorm": "^0.3.28"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
     "@types/node": "^25.4.0",
+    "@types/swagger-ui-express": "^4.1.8",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"

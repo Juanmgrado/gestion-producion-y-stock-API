@@ -1,0 +1,26 @@
+export const LIMIT_PAGE = 10;
+export const DEFAULT_PAGE = 1;
+export const DEFAULT_LIMIT = 10;
+export const EMPTY_DATA_COUNT = 0;
+export const EMPTY_ENV_VAR = 0 ;
+export const USER_PASSWORD_MIN_LENGTH = 6;
+export const MIN_USERNAME_LENGTH = 3;
+export const MAX_USERNAME_LENGTH = 30;
+export const MAX_USEREMAIL_LENGTH = 35;
+export const MIN_PRODUCTNAME = 5;
+export const MAX_PRODUCTNAME = 30;
+export const MIN_ADJUSTMENT_STOCK = 0;
+export const MIN_QUANTITY_IN_PRODUCT = 1;
+export const HOST = 3000;
+export const LOCALHOST = "localhost";
+export const DB_HOST = 5432;
+export const DB_USERNAME = "postgres";
+export const DB_NAME = "postgres";
+export const SALT_ROUNDS = 10;
+export const ACCESS_TOKEN_COOKIE_MAX_AGE = 15 * 60 * 1000;
+export const REFRESH_TOKEN_COOKIE_MAX_AGE = 72 * 60 * 60 * 1000;
+export const REQUIRED_ENV_VARS = [
+  "DB_PASSWORD",
+  "JWT_SECRET",
+  "ADMIN_PASSWORD",
+] as const;

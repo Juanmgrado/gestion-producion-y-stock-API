@@ -1,16 +1,21 @@
 import { DataSource } from "typeorm";
+import { env } from "./dotenv.js";
+import { User } from "../entities/user.entity.js";
+import { Product } from "../entities/product.entity.js";
+import { StockMovement } from "../entities/stockMovement.entity.js";
+import { StockAdjustment } from "../entities/adjustmentStock.entity.js";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
-  host: "localhost",
-  port: 5432,
-  username: "postgres",
-  password: "Goliat2912",
-  database: "postgres",
-  synchronize: true,
+  host: env.DB_HOST,
+  port: Number(env.DB_PORT),
+  username: env.DB_USERNAME,
+  password: env.DB_PASSWORD,
+  database: env.DB_DATABASE,
+  synchronize: false,
   dropSchema: false,
-  logging: true,
-  entities: ["src/entities/**/*.ts"],
+  logging: false,
+  entities: [User, Product, StockMovement, StockAdjustment],
   subscribers: [],
-  migrations: [],
+  migrations: ["src/migrations/**/*.ts"],
 });
