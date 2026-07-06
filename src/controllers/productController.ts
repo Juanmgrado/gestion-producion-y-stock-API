@@ -2,14 +2,15 @@ import { NextFunction, Response, Request } from "express";
 import {
   createProduct,
   deleteProduct,
-  getProductByUuid,
+  findProductByUuid,
   getProducts,
   updateProduct,
 } from "../services/productService.js";
 import { GetProductFiltersDto } from "../dto/product/getProductFilters.dto.js";
-import { DEFAULT_PAGE, LIMIT_PAGE } from "../utills/conts.js";
+import { DEFAULT_PAGE, LIMIT_PAGE } from "../utills/consts.js";
 import {
   CreateNewProductRequest,
+  GetProductByUuidRequest,
   UpdateProductRequest,
 } from "../types/requests.js";
 
@@ -49,52 +50,39 @@ export const createProductController = async (
 ) => {
   try {
     const newProductData = req.body;
-    const { email: userEmail } = req.user!;
-    const createdProduct = await createProduct({ userEmail, newProductData });
+    const { uuid: userUuid } = req.user!;
+    const result = await createProduct({ userUuid, newProductData });
 
-    return res.status(201).json({
-      createdProduct,
-      message: "Product created successfully",
-    });
+    return res.status(201).json(result);
   } catch (error) {
     next(error);
   }
 };
 
 export const findProductByIdController = async (
-  req: Request,
+  req: GetProductByUuidRequest,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const productId = req.params.id;
+    const productUuid = req.params.uuid;
 
-    if (!productId || typeof productId !== "string") {
-      return res.status(400).json({ message: "Invalid product id" });
-    }
-
-    const foundProduct = await getProductByUuid(productId);
-    return res.status(200).json(foundProduct);
+    const result = await findProductByUuid(productUuid);
+    return res.status(200).json(result);
   } catch (error) {
     next(error);
   }
 };
 export const deleteProductController = async (
-  req: Request,
+  req: GetProductByUuidRequest,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const productName = req.body.name;
+    const productUuid = req.params.uuid;
 
-    if (!productName || typeof productName !== "string") {
-      return res.status(400).json({ message: "Insert a valid product name" });
-    }
-
-    const deletedProduct = await deleteProduct(productName);
-    return res
-      .status(204)
-      .json({ deletedProduct, message: "Product deleted successfully" });
+    const result = await deleteProduct(productUuid);
+    return res.status(200).json(result);
   } catch (error) {
     next(error);
   }

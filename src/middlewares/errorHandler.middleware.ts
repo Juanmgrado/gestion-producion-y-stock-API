@@ -30,6 +30,13 @@ export const errorHandler = (
     return res.status(401).json({ status: "fail", message: "Expired token" });
   }
 
+
+  if (err.code === "22P02") {
+    return res
+      .status(400)
+      .json({ status: "fail", message: "Invalid identifier format" });
+  }
+
   if (err.isOperational) {
     return res.status(err.statusCode).json({
       status: err.status,

@@ -5,19 +5,15 @@ import {
   HOST,
   LOCALHOST,
   DB_NAME,
-} from "../utills/conts.js";
+  REQUIRED_ENV_VARS,
+  EMPTY_ENV_VAR,
+} from "../utills/consts.js";
 
 dotenv.config();
 
-const REQUIRED_ENV_VARS = [
-  "DB_PASSWORD",
-  "JWT_SECRET",
-  "ADMIN_PASSWORD",
-] as const;
-
 const missingVars = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
 
-if (missingVars.length > 0) {
+if (missingVars.length > EMPTY_ENV_VAR) {
   console.error(
     `Missing required environment variables: ${missingVars.join(", ")}.\n` +
       "Check your .env file (see .env.example for reference).",

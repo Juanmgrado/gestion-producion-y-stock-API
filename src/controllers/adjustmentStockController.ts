@@ -4,22 +4,22 @@ import {
   getAdjustmentsStock,
   newAdjustmentStock,
 } from "../services/adjustmentStockService.js";
-import { GetAjustmentStockRequest, RegisterAjustmentStockRequest } from "../types/requests.js";
-import { GetAjustmentStockFiltersDto } from "../dto/adjustment/getAjusmentStock.dto.js";
+import { GetAdjustmentStockRequest, RegisterAdjustmentStockRequest } from "../types/requests.js";
+import { GetAdjustmentStockFiltersDto } from "../dto/adjustment/getAdjustmentStock.dto.js";
 
 export const newAdjustmentStockController = async (
-  req: RegisterAjustmentStockRequest,
+  req: RegisterAdjustmentStockRequest,
   res: Response,
   next: NextFunction,
 ) => {
   try {
     const productUuid = req.params.productUuid;
-    const newRegisterAjustmentStockData = req.body;
+    const newRegisterAdjustmentStockData = req.body;
     const { uuid: userUuid } = req.user!;
     const result = await newAdjustmentStock({
       userUuid,
       productUuid,
-      newRegisterAjustmentStockData,
+      newRegisterAdjustmentStockData,
     });
 
     return res.status(201).json(result);
@@ -34,12 +34,12 @@ export const getAdjustmentStockController = async (
   next: NextFunction,
 ) => {
   try {
-    const AdjustmentStockFilters: GetAjustmentStockFiltersDto = {
-      productId: req.query.productId as string | undefined,
+    const AdjustmentStockFilters: GetAdjustmentStockFiltersDto = {
+      productUuid: req.query.productUuid as string | undefined,
       difference: req.query.difference
         ? Number(req.query.difference)
         : undefined,
-      adjustedById: req.query.adjustedById as string | undefined,
+      adjustedByUuid: req.query.adjustedByUuid as string | undefined,
       expectedStock: req.query.expectedStock
         ? Number(req.query.expectedStock)
         : undefined,
@@ -66,7 +66,7 @@ export const getAdjustmentStockController = async (
 };
 
 export const getAdjustmentByUuidController = async (
-  req: GetAjustmentStockRequest,
+  req: GetAdjustmentStockRequest,
   res: Response,
   next: NextFunction,
 ) => {

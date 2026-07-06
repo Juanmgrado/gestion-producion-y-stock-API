@@ -11,7 +11,7 @@ import {
   MAX_USERNAME_LENGTH,
   MIN_USERNAME_LENGTH,
   USER_PASSWORD_MIN_LENGTH,
-} from "../../utills/conts.js";
+} from "../../utills/consts.js";
 import { MatchPasswordConstraint } from "../../validators/matchPassword.validator.js";
 
 export class CreateUserDto {

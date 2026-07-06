@@ -4,18 +4,17 @@ import {
   getAdjustmentStockController,
   newAdjustmentStockController,
 } from "../controllers/adjustmentStockController.js";
-import { validateDto } from "../middelwares/validateDto.middleware.js";
-import { RegisterAjustmentStockDto } from "../dto/adjustment/registerAjustmentStock.dto.js";
+import { validateDto } from "../middlewares/validateDto.middleware.js";
+import { RegisterAdjustmentStockDto } from "../dto/adjustment/registerAdjustmentStock.dto.js";
 
 const adjustmentStockRouter = Router();
 
-adjustmentStockRouter.post(
-  "/stock-adjustments/:productUuid",
-  validateDto(RegisterAjustmentStockDto),
-  newAdjustmentStockController,
-);
-
 adjustmentStockRouter.get("/", getAdjustmentStockController);
 adjustmentStockRouter.get("/:adjustmentUuid", getAdjustmentByUuidController);
+adjustmentStockRouter.post(
+  "/:productUuid",
+  validateDto(RegisterAdjustmentStockDto),
+  newAdjustmentStockController,
+);
 
 export default adjustmentStockRouter;

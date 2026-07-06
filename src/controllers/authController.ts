@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from "express";
-import { loginUser } from "../services/auth.service.js";
-import { AppError } from "../middelwares/errorsHandler.js";
+import { loginUser } from "../services/authService.js";
+import { AppError } from "../middlewares/errorHandler.middleware.js";
 import { generateAuthTokens } from "../utills/generateAuthTokens.js";
 import jwt from "jsonwebtoken";
 import { AuthUser } from "../types/types.js";
-import { getUserByEmail } from "../services/userService.js";
+import { getUserByUuid } from "../services/userService.js";
 import { clearAuthCookies } from "../utills/clearAuthCookies.js";
 import {
   ACCESS_TOKEN_COOKIE_OPTIONS,
@@ -54,7 +54,7 @@ export const refreshTokenController = async (
       process.env.JWT_SECRET!,
     ) as AuthUser;
 
-    const user = await getUserByEmail(decodedToken.email);
+    const user = await getUserByUuid(decodedToken.uuid);
 
     if (!user.isActive) {
       throw new AppError("User is not active", 403);

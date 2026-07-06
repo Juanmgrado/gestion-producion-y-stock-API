@@ -1,31 +1,23 @@
 import { Router } from "express";
 import {
   createUserController,
-  deleteUserByEmailController,
+  deleteUserController,
   getUsers,
   reActiveUserController,
   getUserByUuidController,
   updateUserController,
-} from "../controllers/userControllers.js";
-import { validateDto } from "../middelwares/validateDto.middleware.js";
-import { CreateUserDto } from "../dto/user/createUserDto.js";
+} from "../controllers/userController.js";
+import { validateDto } from "../middlewares/validateDto.middleware.js";
+import { CreateUserDto } from "../dto/user/createUser.dto.js";
 import { UpdateUserDto } from "../dto/user/updateUser.dto.js";
-import { ReactivateUserDto } from "../dto/user/reactivateUser.dto.js";
 
 const userrouter = Router();
 
 userrouter.get("/", getUsers);
 userrouter.get("/:uuid", getUserByUuidController);
-userrouter.post(
-  "/createUser",
-  validateDto(CreateUserDto),
-  createUserController,
-);
-userrouter.patch("/reactive-user", validateDto(ReactivateUserDto), reActiveUserController);
-userrouter.delete("/delete-user", deleteUserByEmailController);
-userrouter.patch(
-  "/update-user",
-  validateDto(UpdateUserDto),
-  updateUserController,
-);
+userrouter.post("/", validateDto(CreateUserDto), createUserController);
+userrouter.patch("/:uuid", validateDto(UpdateUserDto), updateUserController);
+userrouter.patch("/:uuid/reactivate", reActiveUserController);
+userrouter.delete("/:uuid", deleteUserController);
+
 export default userrouter;

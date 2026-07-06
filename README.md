@@ -107,6 +107,10 @@ npm run migration:run                              # Apply pending migrations
 npm run migration:revert                           # Roll back the last migration
 ```
 
+## Interactive API Docs (Swagger)
+
+Once the server is running, open **[http://localhost:5004/api/docs](http://localhost:5004/api/docs)** for the full interactive Swagger UI. You can try every endpoint from the browser — log in via `POST /auth/login` first and the auth cookie is sent automatically on subsequent calls.
+
 ## API Reference
 
 All routes are mounted under `/api`. Authentication uses HTTP-only cookies, so send requests with credentials included (e.g. `fetch(..., { credentials: "include" })` or `curl --cookie-jar`).
@@ -136,21 +140,22 @@ Legend: 🔓 public · 🔑 requires login · 👑 requires admin.
 | ------ | ---------------- | ------------------------------------ |
 | GET    | `/`              | List users (filters & pagination)    |
 | GET    | `/:uuid`         | Get a user by UUID                   |
-| POST   | `/createUser`    | Create a user                        |
-| PATCH  | `/update-user`   | Update a user (by email)             |
-| PATCH  | `/reactive-user` | Reactivate a deactivated user        |
-| DELETE | `/delete-user`   | Deactivate a user (soft delete)      |
+| POST   | `/`                 | Create a user                        |
+| PATCH  | `/:uuid`            | Update a user                        |
+| PATCH  | `/:uuid/reactivate` | Reactivate a deactivated user        |
+| DELETE | `/:uuid`            | Deactivate a user (soft delete)      |
 
 List filters (query params): `name`, `email`, `isAdmin`, `isActive`, `sortBy`, `order`, `page`, `limit`.
 
 ### Products — `/api/product` 🔑
 
-| Method | Endpoint               | Description                       |
-| ------ | ---------------------- | --------------------------------- |
-| GET    | `/get-products`        | List products (filters & pagination) |
-| GET    | `/get-productById/:id` | Get a product by UUID             |
-| POST   | `/create-product`      | Create a product                  |
-| POST   | `/delete-product`      | Soft-delete a product             |
+| Method | Endpoint            | Description                       |
+| ------ | ------------------- | --------------------------------- |
+| GET    | `/`                 | List products (filters & pagination) |
+| GET    | `/:uuid`            | Get a product by UUID             |
+| POST   | `/`                 | Create a product                  |
+| PATCH  | `/:uuid`            | Update a product                  |
+| DELETE | `/:uuid`            | Soft-delete a product             |
 
 **Create product body**
 
@@ -163,7 +168,7 @@ List filters (query params): `name`, `email`, `isAdmin`, `isActive`, `sortBy`, `
 | Method | Endpoint                       | Description                          |
 | ------ | ------------------------------ | ------------------------------------ |
 | GET    | `/`                            | List movements (filters & pagination) |
-| POST   | `/registerMovement/:productUuid` | Register an `IN`/`OUT` movement      |
+| POST   | `/:productUuid`                | Register an `IN`/`OUT` movement      |
 
 **Register movement body**
 
@@ -177,9 +182,9 @@ List filters (query params): `name`, `email`, `isAdmin`, `isActive`, `sortBy`, `
 
 | Method | Endpoint                          | Description                          |
 | ------ | --------------------------------- | ------------------------------------ |
-| GET    | `/`                               | List adjustments (filters & pagination) |
-| GET    | `/:adjustmentUuid`                | Get an adjustment by UUID            |
-| POST   | `/stock-adjustments/:productUuid` | Set an absolute stock value          |
+| GET    | `/`                | List adjustments (filters & pagination) |
+| GET    | `/:adjustmentUuid` | Get an adjustment by UUID            |
+| POST   | `/:productUuid`    | Set an absolute stock value          |
 
 **Register adjustment body**
 

@@ -1,26 +1,26 @@
 import { AppDataSource } from "../config/dataSource.js";
 import { AdjustmentResponseDto } from "../dto/adjustment/adjustmentResponse.dto.js";
-import { GetAjustmentStockFiltersDto } from "../dto/adjustment/getAjusmentStock.dto.js";
+import { GetAdjustmentStockFiltersDto } from "../dto/adjustment/getAdjustmentStock.dto.js";
 import { StockAdjustment } from "../entities/adjustmentStock.entity.js";
 import { Product } from "../entities/product.entity.js";
-import { AppError } from "../middelwares/errorsHandler.js";
-import { adjustmentStocklRepository } from "../repositories/adjustmentStockRepository.js";
-import { ApiResponse, PaginatedResponse } from "../types/commons.js";
-import { RegisterAjustmentStockInput } from "../types/inputs.js";
-import { EMPTY_DATA_COUNT } from "../utills/conts.js";
+import { AppError } from "../middlewares/errorHandler.middleware.js";
+import { adjustmentStockRepository } from "../repositories/adjustmentStockRepository.js";
+import { ApiResponse, PaginatedResponse } from "../types/common.js";
+import { RegisterAdjustmentStockInput } from "../types/inputs.js";
+import { EMPTY_DATA_COUNT } from "../utills/consts.js";
 import { pagination } from "../utills/paginate.js";
 import { getUserByUuid } from "./userService.js";
 
 export const newAdjustmentStock = async (
-  registerAjustmentStockinput: RegisterAjustmentStockInput,
+  registerAdjustmentStockInput: RegisterAdjustmentStockInput,
 ): Promise<ApiResponse<AdjustmentResponseDto>> => {
   return await AppDataSource.transaction(async (manager) => {
     const productRepository = manager.getRepository(Product);
     const adjustmentRepository = manager.getRepository(StockAdjustment);
 
-    const { userUuid, productUuid, newRegisterAjustmentStockData } =
-      registerAjustmentStockinput;
-    const { newStock, reason, note } = newRegisterAjustmentStockData;
+    const { userUuid, productUuid, newRegisterAdjustmentStockData } =
+      registerAdjustmentStockInput;
+    const { newStock, reason, note } = newRegisterAdjustmentStockData;
     await getUserByUuid(userUuid, manager);
 
     const foundProduct = await productRepository.findOne({
@@ -54,21 +54,21 @@ export const newAdjustmentStock = async (
       message: "Adjustment registered successfully",
       data: {
         uuid: newAdjustment.uuid,
-        productId: newAdjustment.productUuid,
+        productUuid: newAdjustment.productUuid,
         expectedStock,
         actualStock: newAdjustment.actualStock,
         difference,
         createdAt: newAdjustment.createdAt.toISOString(),
-        adjustedById: newAdjustment.adjustedByUuid,
+        adjustedByUuid: newAdjustment.adjustedByUuid,
       },
     };
   });
 };
 
 export const getAdjustmentsStock = async (
-  adjustmentFilters: GetAjustmentStockFiltersDto,
+  adjustmentFilters: GetAdjustmentStockFiltersDto,
 ): Promise<PaginatedResponse<AdjustmentResponseDto>> => {
-  const query = adjustmentStocklRepository
+  const query = adjustmentStockRepository
     .createQueryBuilder("adjustment")
     .leftJoinAndSelect("adjustment.product", "product")
     .leftJoinAndSelect("adjustment.adjustedBy", "user")
@@ -85,15 +85,15 @@ export const getAdjustmentsStock = async (
       "user.name",
     ]);
 
-  if (adjustmentFilters.productId) {
+  if (adjustmentFilters.productUuid) {
     query.andWhere("adjustment.productUuid = :productUuid", {
-      productUuid: adjustmentFilters.productId,
+      productUuid: adjustmentFilters.productUuid,
     });
   }
 
-  if (adjustmentFilters.adjustedById) {
+  if (adjustmentFilters.adjustedByUuid) {
     query.andWhere("user.email ILIKE :email", {
-      email: `%${adjustmentFilters.adjustedById}%`,
+      email: `%${adjustmentFilters.adjustedByUuid}%`,
     });
   }
 
@@ -133,7 +133,7 @@ export const getAdjustmentsStock = async (
 
   if (adjustments.length === EMPTY_DATA_COUNT) {
     return {
-      success: false,
+      success: true,
       message: "No adjustments registered",
       total: 0,
       page: paginationValues.page,
@@ -144,8 +144,8 @@ export const getAdjustmentsStock = async (
   }
   const data: AdjustmentResponseDto[] = adjustments.map((adj) => ({
     uuid: adj.uuid,
-    productId: adj.product.uuid || adj.productUuid,
-    adjustedById: adj.adjustedByUuid,
+    productUuid: adj.product.uuid || adj.productUuid,
+    adjustedByUuid: adj.adjustedByUuid,
     expectedStock: adj.expectedStock,
     actualStock: adj.actualStock,
     difference: adj.difference,
@@ -165,7 +165,7 @@ export const getAdjustmentsStock = async (
 export const getAdjustmentByUuid = async (
   adjustmentUuid: string,
 ): Promise<ApiResponse<AdjustmentResponseDto>> => {
-  const foundAdjustment = await adjustmentStocklRepository.findOneBy({
+  const foundAdjustment = await adjustmentStockRepository.findOneBy({
     uuid: adjustmentUuid,
   });
 
@@ -174,8 +174,8 @@ export const getAdjustmentByUuid = async (
   }
   const data: AdjustmentResponseDto = {
     uuid: foundAdjustment.uuid,
-    productId: foundAdjustment.productUuid,
-    adjustedById: foundAdjustment.adjustedByUuid,
+    productUuid: foundAdjustment.productUuid,
+    adjustedByUuid: foundAdjustment.adjustedByUuid,
     expectedStock: foundAdjustment.expectedStock,
     actualStock: foundAdjustment.actualStock,
     difference: foundAdjustment.difference,

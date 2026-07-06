@@ -1,14 +1,14 @@
 import { AppDataSource } from "../config/dataSource.js";
 import { GetMovementsFiltersDto } from "../dto/movement/getMovementsFilters.dto.js";
-import { MovementResponse } from "../dto/movement/newMovementResponse.js";
+import { MovementResponse } from "../dto/movement/newMovementResponse.dto.js";
 import { Product } from "../entities/product.entity.js";
 import { StockMovement } from "../entities/stockMovement.entity.js";
-import { AppError } from "../middelwares/errorsHandler.js";
+import { AppError } from "../middlewares/errorHandler.middleware.js";
 import { stockMovementRepository } from "../repositories/stockMovementRepository.js";
-import { PaginatedResponse } from "../types/commons.js";
+import { ApiResponse, PaginatedResponse } from "../types/common.js";
 import { RegisterNewMovementInput } from "../types/inputs.js";
 import { checkAndModifyStock } from "../utills/checkAndModifyStock.js";
-import { EMPTY_DATA_COUNT } from "../utills/conts.js";
+import { EMPTY_DATA_COUNT } from "../utills/consts.js";
 import { pagination } from "../utills/paginate.js";
 import { getUserByUuid } from "./userService.js";
 
@@ -94,7 +94,7 @@ export const getMovements = async (
 
   if (movements.length === EMPTY_DATA_COUNT) {
     return {
-      success: false,
+      success: true,
       message: "No movements registered",
       total: 0,
       page: paginationValues.page,
@@ -115,22 +115,9 @@ export const getMovements = async (
   };
 };
 
-export const getStockMovementById = async (movementId: any, manager?: any) => {
-  const repo = manager
-    ? manager.getRepository(StockMovement)
-    : stockMovementRepository;
-
-  const foundMovement = await repo.findOneBy({ id: movementId });
-  if (!foundMovement) {
-    throw new AppError("Movement not found", 404);
-  }
-
-  return foundMovement;
-};
-
 export const registerMovement = async (
   newMovementInput: RegisterNewMovementInput,
-): Promise<MovementResponse> => {
+): Promise<ApiResponse<MovementResponse>> => {
   const { userUuid, productUuid } = newMovementInput;
   const { newMovementData } = newMovementInput;
   const { quantity, typeMovement, note } = newMovementData;
@@ -178,6 +165,10 @@ export const registerMovement = async (
       createdAt: newMovement.createdAt,
     };
 
-    return newMovementResponse;
+    return {
+      success: true,
+      message: "Movement registered successfully",
+      data: newMovementResponse,
+    };
   });
 };

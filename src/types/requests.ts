@@ -1,10 +1,11 @@
 import { Request } from "express";
-import { RegisterAjustmentStockDto } from "../dto/adjustment/registerAjustmentStock.dto.js";
+import { RegisterAdjustmentStockDto } from "../dto/adjustment/registerAdjustmentStock.dto.js";
 import { RegisterNewMovementDto } from "../dto/movement/registerNewMovement.dto.js";
 import { CreateProductDto } from "../dto/product/createProduct.dto.js";
-import { AdjustmentUuid, ProductUuid, UserUuid } from "./commons.js";
+import { AdjustmentUuid, ProductUuid, UserUuid } from "./common.js";
 import { JwtPayload } from "./types.js";
 import { UpdateProductDto } from "../dto/product/updateProduct.dto.js";
+import { UpdateUserDto } from "../dto/user/updateUser.dto.js";
 
 export interface CreateNewProductRequest extends Request {
   body: CreateProductDto;
@@ -19,15 +20,15 @@ export interface RegisterNewMovementRequest extends Request {
   user?: JwtPayload;
 }
 
-export interface RegisterAjustmentStockRequest extends Request {
+export interface RegisterAdjustmentStockRequest extends Request {
   params: {
     productUuid: ProductUuid;
   };
-  body: RegisterAjustmentStockDto;
+  body: RegisterAdjustmentStockDto;
   user?: JwtPayload;
 }
 
-export interface GetAjustmentStockRequest extends Request {
+export interface GetAdjustmentStockRequest extends Request {
   params: {
     adjustmentUuid: AdjustmentUuid;
   };
@@ -39,6 +40,20 @@ export interface GetUserByUuidRequest extends Request {
   };
 }
 
+export interface UpdateUserRequest extends Request {
+  params: {
+    uuid: UserUuid;
+  };
+  body: UpdateUserDto;
+  user?: JwtPayload;
+}
+
+
+export interface GetProductByUuidRequest extends Request {
+  params: {
+    uuid: ProductUuid;
+  };
+}
 
 export interface UpdateProductRequest extends Request {
   params: {

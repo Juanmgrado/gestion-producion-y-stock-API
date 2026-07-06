@@ -1,5 +1,5 @@
 import { IsString, MinLength, Validate } from "class-validator";
-import { USER_PASSWORD_MIN_LENGTH } from "../../utills/conts.js";
+import { USER_PASSWORD_MIN_LENGTH } from "../../utills/consts.js";
 import { MatchPasswordConstraint } from "../../validators/matchPassword.validator.js";
 
 export class ChangePasswordDto {

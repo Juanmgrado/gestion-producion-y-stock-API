@@ -1,4 +1,4 @@
-import { RegisterAjustmentStockDto } from "../dto/adjustment/registerAjustmentStock.dto.js";
+import { RegisterAdjustmentStockDto } from "../dto/adjustment/registerAdjustmentStock.dto.js";
 import { RegisterNewMovementDto } from "../dto/movement/registerNewMovement.dto.js";
 import { CreateProductDto } from "../dto/product/createProduct.dto.js";
 import { UpdateProductDto } from "../dto/product/updateProduct.dto.js";
@@ -10,14 +10,14 @@ export interface RegisterNewMovementInput {
   newMovementData: RegisterNewMovementDto;
 }
 
-export interface RegisterAjustmentStockInput {
+export interface RegisterAdjustmentStockInput {
   userUuid: string;
   productUuid: string;
-  newRegisterAjustmentStockData: RegisterAjustmentStockDto;
+  newRegisterAdjustmentStockData: RegisterAdjustmentStockDto;
 }
 
 export interface CreateNewProductInput {
-  userEmail: string;
+  userUuid: string;
   newProductData: CreateProductDto;
 }
 

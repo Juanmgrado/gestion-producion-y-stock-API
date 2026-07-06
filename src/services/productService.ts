@@ -1,14 +1,14 @@
 import { EntityManager } from "typeorm";
 import { GetProductFiltersDto } from "../dto/product/getProductFilters.dto.js";
-import { ProductResponseDto } from "../dto/product/productResponse.js";
+import { ProductResponseDto } from "../dto/product/productResponse.dto.js";
 import { Product } from "../entities/product.entity.js";
-import { AppError } from "../middelwares/errorsHandler.js";
+import { AppError } from "../middlewares/errorHandler.middleware.js";
 import { productRepository } from "../repositories/productRepository.js";
-import { ApiResponse, PaginatedResponse } from "../types/commons.js";
+import { ApiResponse, PaginatedResponse } from "../types/common.js";
 import { CreateNewProductInput, UpdateProductInput } from "../types/inputs.js";
-import { EMPTY_DATA_COUNT } from "../utills/conts.js";
+import { EMPTY_DATA_COUNT } from "../utills/consts.js";
 import { pagination } from "../utills/paginate.js";
-import { getUserByEmail } from "./userService.js";
+import { getUserByUuid } from "./userService.js";
 
 export const getProducts = async (
   filtersProduct: GetProductFiltersDto,
@@ -88,8 +88,8 @@ export const getProducts = async (
 
 export const createProduct = async (
   newProductInput: CreateNewProductInput,
-): Promise<ProductResponseDto> => {
-  const foundUser = await getUserByEmail(newProductInput.userEmail);
+): Promise<ApiResponse<ProductResponseDto>> => {
+  const foundUser = await getUserByUuid(newProductInput.userUuid);
   const { name, stock } = newProductInput.newProductData;
 
   const foundProduct = await productRepository.findOneBy({
@@ -109,10 +109,14 @@ export const createProduct = async (
   await productRepository.save(createdProduct);
 
   return {
-    uuid: createdProduct.uuid,
-    name: createdProduct.name,
-    stock: createdProduct.stock,
-    isActive: createdProduct.isActive,
+    success: true,
+    message: "Product created successfully",
+    data: {
+      uuid: createdProduct.uuid,
+      name: createdProduct.name,
+      stock: createdProduct.stock,
+      isActive: createdProduct.isActive,
+    },
   };
 };
 
@@ -130,18 +134,42 @@ export const getProductByUuid = async (
   return foundProduct;
 };
 
-export const deleteProduct = async (name: string) => {
-  const foundProduct = await productRepository.findOneBy({ name: name });
+export const findProductByUuid = async (
+  productUuid: string,
+): Promise<ApiResponse<ProductResponseDto>> => {
+  const product = await getProductByUuid(productUuid);
 
-  if (!foundProduct) {
-    throw new AppError("Product not found", 404);
-  }
+  return {
+    success: true,
+    message: "Product found successfully",
+    data: {
+      uuid: product.uuid,
+      name: product.name,
+      stock: product.stock,
+      isActive: product.isActive,
+    },
+  };
+};
+
+export const deleteProduct = async (
+  productUuid: string,
+): Promise<ApiResponse<ProductResponseDto>> => {
+  const foundProduct = await getProductByUuid(productUuid);
 
   foundProduct.isActive = false;
 
-  const deletedProduct = await productRepository.save(foundProduct);
+  await productRepository.save(foundProduct);
 
-  return deletedProduct;
+  return {
+    success: true,
+    message: "Product deleted successfully",
+    data: {
+      uuid: foundProduct.uuid,
+      name: foundProduct.name,
+      stock: foundProduct.stock,
+      isActive: foundProduct.isActive,
+    },
+  };
 };
 
 export const updateProduct = async (

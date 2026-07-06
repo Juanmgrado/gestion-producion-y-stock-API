@@ -1,5 +1,5 @@
 import { CookieOptions } from "express";
-import { ACCESS_TOKEN_COOKIE_MAX_AGE, REFRESH_TOKEN_COOKIE_MAX_AGE } from "./conts.js";
+import { ACCESS_TOKEN_COOKIE_MAX_AGE, REFRESH_TOKEN_COOKIE_MAX_AGE } from "./consts.js";
 
 export const ACCESS_TOKEN_COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { plainToInstance, ClassConstructor } from "class-transformer";
 import { validate } from "class-validator";
-import { EMPTY_DATA_COUNT } from "../utills/conts.js";
+import { EMPTY_DATA_COUNT } from "../utills/consts.js";
 
 export const validateDto =
   (DtoClass: ClassConstructor<any>) =>
