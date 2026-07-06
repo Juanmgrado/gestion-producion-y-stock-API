@@ -1,5 +1,5 @@
 import { IsNumber, IsOptional, IsString, MaxLength, Min, MinLength } from "class-validator";
-import { MAX_PRODUCTNAME, MIN_PRODUCTNAME, MIN_QUANTITY_IN_PRODUCT } from "../../utills/conts.js";
+import { MAX_PRODUCTNAME, MIN_PRODUCTNAME, MIN_QUANTITY_IN_PRODUCT } from "../../utills/consts.js";
 import { Type } from "class-transformer";
 
 export class CreateProductDto {

@@ -1,4 +1,4 @@
-import { DEFAULT_PAGE, LIMIT_PAGE } from "./conts.js";
+import { DEFAULT_PAGE, LIMIT_PAGE } from "./consts.js";
 
 export const pagination = (page?: number, limit?: number) => {
     

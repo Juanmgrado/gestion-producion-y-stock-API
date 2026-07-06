@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { JwtPayload } from "../types/types.js";
-import { getUserByEmail } from "../services/userService.js";
+import { getUserByUuid } from "../services/userService.js";
 import { clearAuthCookies } from "../utills/clearAuthCookies.js";
 
 export const verifyToken = async (
@@ -23,7 +23,7 @@ export const verifyToken = async (
       process.env.JWT_SECRET!,
     ) as JwtPayload;
 
-    const user = await getUserByEmail(decodedToken.email);
+    const user = await getUserByUuid(decodedToken.uuid);
     if (!user || !user.isActive) {
       clearAuthCookies(res);
       return res

@@ -1,14 +1,14 @@
 import { EntityManager } from "typeorm";
-import { CreateUserDto } from "../dto/user/createUserDto.js";
-import { GetUserFiltersDto } from "../dto/user/getUserFilter.dto.js";
-import { UserResponseDto } from "../dto/user/userResponse.Dto.js";
+import { CreateUserDto } from "../dto/user/createUser.dto.js";
+import { GetUserFiltersDto } from "../dto/user/getUserFilters.dto.js";
+import { UserResponseDto } from "../dto/user/userResponse.dto.js";
 import { User } from "../entities/user.entity.js";
-import { usersRepository } from "../repositories/usersRepository.js";
-import { ApiResponse, PaginatedResponse } from "../types/commons.js";
+import { userRepository } from "../repositories/userRepository.js";
+import { ApiResponse, PaginatedResponse } from "../types/common.js";
 import { AuthTokens, JwtPayload } from "../types/types.js";
-import { EMPTY_DATA_COUNT, SALT_ROUNDS } from "../utills/conts.js";
+import { EMPTY_DATA_COUNT, SALT_ROUNDS } from "../utills/consts.js";
 import { pagination } from "../utills/paginate.js";
-import { AppError } from "../middelwares/errorsHandler.js";
+import { AppError } from "../middlewares/errorHandler.middleware.js";
 import { generateAuthTokens } from "../utills/generateAuthTokens.js";
 import * as bcrypt from "bcrypt";
 import { UpdateUserDto } from "../dto/user/updateUser.dto.js";
@@ -24,7 +24,7 @@ export const getAllUsers = async (
   const { name, email, isAdmin, isActive, sortBy, order, page, limit } =
     userFilters;
 
-  const query = usersRepository.createQueryBuilder("user");
+  const query = userRepository.createQueryBuilder("user");
 
   if (name) {
     query.andWhere("user.name ILIKE :name", {
@@ -67,7 +67,7 @@ export const getAllUsers = async (
 
   if (data.length === EMPTY_DATA_COUNT) {
     return {
-      success: false,
+      success: true,
       message: "No users found",
       total: 0,
       page: paginationValues.page,
@@ -92,7 +92,7 @@ export const getUserByEmail = async (
   userEmail: string,
   manager?: EntityManager,
 ): Promise<User> => {
-  const repository = manager ? manager.getRepository(User) : usersRepository;
+  const repository = manager ? manager.getRepository(User) : userRepository;
 
   const foundUser = await repository.findOneBy({ email: userEmail });
 
@@ -107,7 +107,7 @@ export const getUserByUuid = async (
   userUuid: string,
   manager?: EntityManager,
 ): Promise<User> => {
-  const repository = manager ? manager.getRepository(User) : usersRepository;
+  const repository = manager ? manager.getRepository(User) : userRepository;
 
   const foundUser = await repository.findOneBy({ uuid: userUuid });
 
@@ -118,20 +118,38 @@ export const getUserByUuid = async (
   return foundUser;
 };
 
+export const getUserResponseByUuid = async (
+  userUuid: string,
+): Promise<ApiResponse<UserResponseDto>> => {
+  const user = await getUserByUuid(userUuid);
+
+  return {
+    success: true,
+    message: "User found successfully",
+    data: {
+      uuid: user.uuid,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      isActive: user.isActive,
+    },
+  };
+};
+
 export const createUser = async (
   newUser: CreateUserDto,
 ): Promise<ApiResponse<UserResponseDto>> => {
   const { email } = newUser;
 
-  const existsEmail = await usersRepository.findOneBy({ email });
+  const existsEmail = await userRepository.findOneBy({ email });
   if (existsEmail) {
     throw new AppError("Email already in use", 409);
   }
 
-  const user = usersRepository.create(newUser);
+  const user = userRepository.create(newUser);
   user.password = await bcrypt.hash(user.password, SALT_ROUNDS);
 
-  await usersRepository.save(user);
+  await userRepository.save(user);
 
   const userResponse: UserResponseDto = {
     uuid: user.uuid,
@@ -149,20 +167,16 @@ export const createUser = async (
 };
 
 export const reActiveUser = async (
-  email: string,
+  userUuid: string,
 ): Promise<ApiResponse<UserResponseDto>> => {
-  const foundUser = await usersRepository.findOneBy({ email });
-
-  if (!foundUser) {
-    throw new AppError("User not found", 404);
-  }
+  const foundUser = await getUserByUuid(userUuid);
 
   if (foundUser.isActive === true) {
     throw new AppError("This user is already active", 409);
   }
   foundUser.isActive = true;
 
-  await usersRepository.save(foundUser);
+  await userRepository.save(foundUser);
 
   const userResponse: UserResponseDto = {
     uuid: foundUser.uuid,
@@ -179,20 +193,17 @@ export const reActiveUser = async (
   };
 };
 
-export const deleteUserByEmail = async (
-  email: string,
+export const deleteUser = async (
+  userUuid: string,
 ): Promise<ApiResponse<UserResponseDto>> => {
-  const foundUser = await usersRepository.findOneBy({ email: email });
-  if (!foundUser) {
-    throw new AppError("User not found", 404);
-  }
+  const foundUser = await getUserByUuid(userUuid);
 
   if (foundUser.isActive === false) {
     throw new AppError("This user is already deleted", 400);
   }
   foundUser.isActive = false;
 
-  await usersRepository.save(foundUser);
+  await userRepository.save(foundUser);
 
   const userResponse: UserResponseDto = {
     uuid: foundUser.uuid,
@@ -210,25 +221,28 @@ export const deleteUserByEmail = async (
 };
 
 export const updateUser = async (
+  userUuid: string,
   updateUserData: UpdateUserDto,
   loggedUser: JwtPayload,
 ): Promise<UpdateUserResult> => {
-  const { email, newEmail, name, isAdmin } = updateUserData;
+  const { email, name, isAdmin } = updateUserData;
 
-  const user = await getUserByEmail(email);
+  const user = await getUserByUuid(userUuid);
 
-  if (newEmail && newEmail !== email) {
-    const emailInUse = await usersRepository.findOneBy({ email: newEmail });
+  let emailChanged = false;
+  if (email && email !== user.email) {
+    const emailInUse = await userRepository.findOneBy({ email });
     if (emailInUse) {
       throw new AppError("Email already in use", 409);
     }
-    user.email = newEmail;
+    user.email = email;
+    emailChanged = true;
   }
 
   if (name !== undefined) user.name = name;
   if (isAdmin !== undefined) user.isAdmin = isAdmin;
 
-  await usersRepository.save(user);
+  await userRepository.save(user);
 
   const userResponse: UserResponseDto = {
     uuid: user.uuid,
@@ -244,8 +258,9 @@ export const updateUser = async (
     data: userResponse,
   };
 
-  if (newEmail && loggedUser.email === email) {
-    result.newTokens = generateAuthTokens({ ...loggedUser, email: newEmail });
+  // Reissue tokens if the logged-in user changed their own email
+  if (emailChanged && loggedUser.uuid === userUuid) {
+    result.newTokens = generateAuthTokens({ ...loggedUser, email: user.email });
   }
 
   return result;
@@ -267,7 +282,7 @@ export const changeUserPassword = async (
 
   user.password = newPasswordHashed;
 
-  await usersRepository.save(user);
+  await userRepository.save(user);
 
   const userResponse: UserResponseDto = {
     uuid: user.uuid,

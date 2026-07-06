@@ -3,9 +3,9 @@ import userrouter from "./userRouter.js";
 import productRouter from "./productRouter.js";
 import stockMovementRouter from "./stockMovementRouter.js";
 import adjustmentStockRouter from "./adjustmentStockRouter.js";
-import authRouter from "./auth.router.js";
-import { verifyToken } from "../middelwares/verifyToken.middleware.js";
-import { verifyAdmin } from "../middelwares/verifyIsAdmin.middleware.js";
+import authRouter from "./authRouter.js";
+import { verifyToken } from "../middlewares/verifyToken.middleware.js";
+import { verifyAdmin } from "../middlewares/verifyIsAdmin.middleware.js";
 
 const router = Router();
 

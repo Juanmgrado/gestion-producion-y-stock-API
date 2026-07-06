@@ -1,4 +1,4 @@
-import { AppError } from "../middelwares/errorsHandler.js";
+import { AppError } from "../middlewares/errorHandler.middleware.js";
 
 export function checkAndModifyStock(
   type: "IN" | "OUT",

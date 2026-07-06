@@ -1,5 +1,5 @@
 import { IsString, MaxLength, MinLength } from "class-validator";
-import { MAX_PRODUCTNAME, MIN_PRODUCTNAME } from "../../utills/conts.js";
+import { MAX_PRODUCTNAME, MIN_PRODUCTNAME } from "../../utills/consts.js";
 
 export class UpdateProductDto {
   @IsString()

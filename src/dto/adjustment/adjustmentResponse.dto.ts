@@ -1,7 +1,7 @@
 export type AdjustmentResponseDto = {
   uuid: string;
-  productId: string;
-  adjustedById: string;
+  productUuid: string;
+  adjustedByUuid: string;
   expectedStock: number;
   actualStock: number;
   difference: number;

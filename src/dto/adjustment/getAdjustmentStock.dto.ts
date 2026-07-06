@@ -1,7 +1,7 @@
 
-export type GetAjustmentStockFiltersDto = {
-  productId: string | undefined;
-  adjustedById: string | undefined;
+export type GetAdjustmentStockFiltersDto = {
+  productUuid: string | undefined;
+  adjustedByUuid: string | undefined;
   difference: number | undefined;
   expectedStock: number | undefined;
   startDate: string | undefined;

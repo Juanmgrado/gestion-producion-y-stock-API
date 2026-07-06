@@ -1,11 +1,11 @@
 import { AppDataSource } from "../config/dataSource.js";
 import { User } from "../entities/user.entity.js";
-import { usersRepository } from "../repositories/usersRepository.js";
+import { userRepository } from "../repositories/userRepository.js";
 import  bcrypt  from "bcrypt";
-import { SALT_ROUNDS } from "./conts.js";
+import { SALT_ROUNDS } from "./consts.js";
 
  export default async function createUserAdmin(){
-    const adminExists = await usersRepository.existsBy({ isAdmin: true });
+    const adminExists = await userRepository.existsBy({ isAdmin: true });
     const adminPassword = process.env.ADMIN_PASSWORD;
 
     if (!adminPassword) {

@@ -1,10 +1,10 @@
 import { LoginUserDto } from "../dto/user/loginUser.dto.js";
-import { AppError } from "../middelwares/errorsHandler.js";
+import { AppError } from "../middlewares/errorHandler.middleware.js";
 import { AuthTokens } from "../types/types.js";
 import { getUserByEmail } from "./userService.js";
 import * as bcrypt from "bcrypt";
 import { generateAuthTokens } from "../utills/generateAuthTokens.js";
-import { ApiResponse } from "../types/commons.js";
+import { ApiResponse } from "../types/common.js";
 
 export const loginUser = async (
   loginUserDto: LoginUserDto,

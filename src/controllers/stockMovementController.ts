@@ -14,8 +14,8 @@ export const getMovementsController = async (
 ) => {
   try {
     const getMovementsFilters: GetMovementsFiltersDto = {
-      productUuid: req.query.productId as string | undefined,
-      userUuid: req.query.employee as string | undefined,
+      productUuid: req.query.productUuid as string | undefined,
+      userUuid: req.query.userUuid as string | undefined,
       note: req.query.note as string | undefined,
 
       movementType: Object.values(MovementType).includes(
@@ -56,16 +56,13 @@ export const registerMovementController = async (
     const productUuid = req.params.productUuid;
     const newMovementData = req.body;
 
-    const newMovementRegistered = await registerMovement({
+    const result = await registerMovement({
       userUuid,
       productUuid,
       newMovementData,
     });
 
-    return res.status(200).json({
-      newMovementRegistered,
-      message: "Movement registered successfully",
-    });
+    return res.status(201).json(result);
   } catch (error) {
     next(error);
   }

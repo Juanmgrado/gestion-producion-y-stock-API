@@ -1,5 +1,5 @@
 import { productRepository } from "../repositories/productRepository.js";
-import { EMPTY_DATA_COUNT } from "./conts.js";
+import { EMPTY_DATA_COUNT } from "./consts.js";
 
 export default async function createProductsList() {
 

@@ -2,20 +2,22 @@ import { NextFunction, Request, Response } from "express";
 import {
   changeUserPassword,
   createUser,
-  deleteUserByEmail,
+  deleteUser,
   getAllUsers,
-  getUserByUuid,
+  getUserResponseByUuid,
   reActiveUser,
   updateUser,
 } from "../services/userService.js";
-import { GetUserFiltersDto } from "../dto/user/getUserFilter.dto.js";
+import { GetUserFiltersDto } from "../dto/user/getUserFilters.dto.js";
 import { Order, UserSortBy } from "../types/enums.js";
-import { DEFAULT_PAGE, LIMIT_PAGE } from "../utills/conts.js";
-import { ACCESS_TOKEN_COOKIE_OPTIONS, REFRESH_TOKEN_COOKIE_OPTIONS } from "../utills/cookieOptions.js";
+import { DEFAULT_PAGE, LIMIT_PAGE } from "../utills/consts.js";
+import {
+  ACCESS_TOKEN_COOKIE_OPTIONS,
+  REFRESH_TOKEN_COOKIE_OPTIONS,
+} from "../utills/cookieOptions.js";
 import { UpdateUserDto } from "../dto/user/updateUser.dto.js";
 import { ChangePasswordDto } from "../dto/user/changePassword.dto.js";
-import { AppError } from "../middelwares/errorsHandler.js";
-import { GetUserByUuidRequest } from "../types/requests.js";
+import { GetUserByUuidRequest, UpdateUserRequest } from "../types/requests.js";
 
 export const getUsers = async (
   req: Request,
@@ -62,18 +64,8 @@ export const getUserByUuidController = async (
 ) => {
   try {
     const { uuid } = req.params;
-    const user = await getUserByUuid(uuid);
-    return res.status(200).json({
-      success: true,
-      message: "User found successfully",
-      data: {
-        uuid: user.uuid,
-        name: user.name,
-        email: user.email,
-        isAdmin: user.isAdmin,
-        isActive: user.isActive,
-      },
-    });
+    const result = await getUserResponseByUuid(uuid);
+    return res.status(200).json(result);
   } catch (error: any) {
     next(error);
   }
@@ -95,30 +87,27 @@ export const createUserController = async (
 };
 
 export const reActiveUserController = async (
-  req: Request,
+  req: GetUserByUuidRequest,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const { email } = req.body;
-    const result = await reActiveUser(email);
+    const { uuid } = req.params;
+    const result = await reActiveUser(uuid);
     return res.status(200).json(result);
   } catch (error: any) {
     next(error);
   }
 };
 
-export const deleteUserByEmailController = async (
-  req: Request,
+export const deleteUserController = async (
+  req: GetUserByUuidRequest,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const { email } = req.query;
-    if (!email) {
-      throw new AppError("Please, insert a valid email", 400);
-    }
-    const result = await deleteUserByEmail(email as string);
+    const { uuid } = req.params;
+    const result = await deleteUser(uuid);
     return res.status(200).json(result);
   } catch (error) {
     next(error);
@@ -126,21 +115,31 @@ export const deleteUserByEmailController = async (
 };
 
 export const updateUserController = async (
-  req: Request,
+  req: UpdateUserRequest,
   res: Response,
   next: NextFunction,
 ) => {
   try {
+    const { uuid } = req.params;
     const updateUserData: UpdateUserDto = req.body;
     const { newTokens, ...result } = await updateUser(
+      uuid,
       updateUserData,
       req.user!,
     );
 
     if (newTokens) {
       res
-        .cookie("accessToken", newTokens.accessToken, ACCESS_TOKEN_COOKIE_OPTIONS)
-        .cookie("refreshToken", newTokens.refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
+        .cookie(
+          "accessToken",
+          newTokens.accessToken,
+          ACCESS_TOKEN_COOKIE_OPTIONS,
+        )
+        .cookie(
+          "refreshToken",
+          newTokens.refreshToken,
+          REFRESH_TOKEN_COOKIE_OPTIONS,
+        );
     }
 
     return res.status(200).json(result);
@@ -163,8 +162,16 @@ export const changeUserPasswordController = async (
     });
 
     res
-      .cookie("accessToken", newTokens!.accessToken, ACCESS_TOKEN_COOKIE_OPTIONS)
-      .cookie("refreshToken", newTokens!.refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
+      .cookie(
+        "accessToken",
+        newTokens!.accessToken,
+        ACCESS_TOKEN_COOKIE_OPTIONS,
+      )
+      .cookie(
+        "refreshToken",
+        newTokens!.refreshToken,
+        REFRESH_TOKEN_COOKIE_OPTIONS,
+      );
 
     return res.status(200).json(result);
   } catch (error) {

@@ -1,6 +1,6 @@
 import { IsNumber, Min, IsEnum, IsString, IsOptional } from "class-validator";
 import { Type } from "class-transformer";
-import { MIN_QUANTITY_IN_PRODUCT } from "../../utills/conts.js";
+import { MIN_QUANTITY_IN_PRODUCT } from "../../utills/consts.js";
 import { MovementType } from "../../types/enums.js";
 
 export class RegisterNewMovementDto {
