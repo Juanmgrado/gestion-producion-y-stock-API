@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { verifyToken } from "./verifyToken.middleware.js";
 import jwt from "jsonwebtoken";
 import * as userService from "../services/userService.js";
