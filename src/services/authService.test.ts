@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { loginUser } from "./authService.js";
+import { AppError } from "../middlewares/errorHandler.middleware.js";
 import * as userService from "./userService.js";
 import * as bcrypt from "bcrypt";
 
@@ -7,6 +8,18 @@ vi.mock("./userService.js");
 vi.mock("bcrypt");
 
 describe("loginUser", () => {
+  it("should propagate the error when the user does not exist", async () => {
+    const loginDto = { email: "noexiste@test.com", password: "123456" };
+
+    vi.mocked(userService.getUserByEmail).mockRejectedValue(
+      new AppError("User not found", 404),
+    );
+
+    await expect(loginUser(loginDto as any)).rejects.toThrow(
+      "User not found",
+    );
+  });
+
   it("should throw 403 when the user is inactive", async () => {
     const loginDto = { email: "test@test.com", password: "123456" };
 

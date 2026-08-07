@@ -19,6 +19,9 @@ describe("validateDto", () => {
     await middleware(req, res as any, next);
 
     expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      message: expect.any(Array),
+    });
     expect(next).not.toHaveBeenCalled();
   });
 
@@ -32,5 +35,19 @@ describe("validateDto", () => {
 
     expect(res.status).not.toHaveBeenCalled();
     expect(next).toHaveBeenCalled();
+  });
+
+  it("should transform the body into a real DTO instance, coercing types", async () => {
+    const req = { body: { name: "Producto válido", stock: "10" } } as any;
+    const res = createMockRes();
+    const next = vi.fn();
+
+    const middleware = validateDto(CreateProductDto);
+    await middleware(req, res as any, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(req.body).toBeInstanceOf(CreateProductDto);
+    expect(req.body.stock).toBe(10);
+    expect(typeof req.body.stock).toBe("number");
   });
 });
