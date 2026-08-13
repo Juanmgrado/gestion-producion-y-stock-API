@@ -31,4 +31,8 @@ export const env = {
   CORS_ORIGIN: process.env.CORS_ORIGIN ?? "http://localhost:5173",
   JWT_SECRET: process.env.JWT_SECRET!,
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD!,
+  TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID,
+  TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN,
+  TWILIO_WHATSAPP_FROM: process.env.TWILIO_WHATSAPP_FROM,
+  TWILIO_WHATSAPP_TO: process.env.TWILIO_WHATSAPP_TO,
 };
