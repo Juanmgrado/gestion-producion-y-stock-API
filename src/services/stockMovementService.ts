@@ -11,6 +11,7 @@ import { checkAndModifyStock } from "../utills/checkAndModifyStock.js";
 import { EMPTY_DATA_COUNT } from "../utills/consts.js";
 import { pagination } from "../utills/paginate.js";
 import { getUserByUuid } from "./userService.js";
+import { notifyLowStock } from "../utills/notifyLowStock.js";
 
 export const getMovements = async (
   stockMovementsFilters: GetMovementsFiltersDto,
@@ -122,7 +123,10 @@ export const registerMovement = async (
   const { newMovementData } = newMovementInput;
   const { quantity, typeMovement, note } = newMovementData;
 
-  return await AppDataSource.transaction(async (manager) => {
+  let outOfStock = false;
+  let productName = "";
+
+  const result = await AppDataSource.transaction(async (manager) => {
     const productRepository = manager.getRepository(Product);
     const movementRepository = manager.getRepository(StockMovement);
 
@@ -144,6 +148,8 @@ export const registerMovement = async (
     );
 
     foundProduct.stock = newStock;
+    outOfStock = newStock === 0;
+    productName = foundProduct.name;
 
     const newMovement = movementRepository.create({
       quantity,
@@ -171,4 +177,10 @@ export const registerMovement = async (
       data: newMovementResponse,
     };
   });
+
+  if (outOfStock) {
+    await notifyLowStock(productName);
+  }
+
+  return result;
 };
