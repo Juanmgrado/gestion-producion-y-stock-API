@@ -22,6 +22,7 @@ if (missingVars.length > EMPTY_ENV_VAR) {
 }
 
 export const env = {
+  NODE_ENV: process.env.NODE_ENV ?? "development",
   PORT: process.env.PORT ?? HOST,
   DB_HOST: process.env.DB_HOST ?? LOCALHOST,
   DB_PORT: process.env.DB_PORT ?? DB_HOST,
