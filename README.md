@@ -4,12 +4,17 @@ REST API for production and inventory management, built with **Express 5**, **Ty
 
 It handles users, products, stock movements (in/out) and stock adjustments, with JWT authentication stored in HTTP-only cookies, role-based access (admin), DTO validation, pagination and concurrency-safe stock mutations.
 
+**Live demo:** [https://stock-api-hqjp.onrender.com](https://stock-api-hqjp.onrender.com) · [Interactive API docs](https://stock-api-hqjp.onrender.com/api/docs)
+
+> Hosted on Render's free tier — the first request after a period of inactivity can take 30-60s to respond while the instance spins back up.
+
 ## Features
 
 - 🔐 **JWT authentication** via HTTP-only cookies (access + refresh tokens) with logout and token refresh.
 - 👤 **User management** (admin only): create, update, deactivate/reactivate and list users with filters.
 - 📦 **Product catalog**: create, list (with filters & pagination), fetch by id and soft-delete.
 - 🔄 **Stock movements**: register `IN` / `OUT` movements that update product stock.
+- 📲 **Low-stock WhatsApp alerts**: sends a Twilio WhatsApp message automatically when a movement brings a product's stock down to 0 (optional — skipped if Twilio isn't configured).
 - 🧮 **Stock adjustments** (admin only): set an absolute stock value while recording the expected stock and the difference.
 - 🔒 **Concurrency-safe stock**: mutations run inside transactions with a `pessimistic_write` lock on the product row.
 - ✅ **DTO validation** with `class-validator` / `class-transformer`.
@@ -90,8 +95,18 @@ Defined in `.env` at the project root (see [`.env.example`](.env.example)):
 | `PORT`           | no       | `3000`      | HTTP server port                     |
 | `JWT_SECRET`     | **yes**  | —           | Secret used to sign JWTs             |
 | `ADMIN_PASSWORD` | **yes**  | —           | Password for the seeded admin user   |
+| `TWILIO_ACCOUNT_SID`    | no | — | Twilio account SID, for low-stock WhatsApp alerts |
+| `TWILIO_AUTH_TOKEN`     | no | — | Twilio auth token |
+| `TWILIO_WHATSAPP_FROM`  | no | — | Twilio WhatsApp sender number (e.g. `whatsapp:+14155238886`) |
+| `TWILIO_WHATSAPP_TO`    | no | — | WhatsApp number that receives the alerts |
 
-Required variables are validated on boot — the app exits with a clear message if any is missing.
+Required variables are validated on boot — the app exits with a clear message if any is missing. The four `TWILIO_*` variables are all-or-nothing: if any is missing, low-stock alerts are silently skipped (logged as a warning) instead of failing the request.
+
+## Deployment
+
+Deployed on [Render](https://render.com) from a multi-stage [`Dockerfile`](Dockerfile) and a [`render.yaml`](render.yaml) Blueprint (provisions a Docker web service + a managed Postgres database, wired together automatically). `NODE_ENV=production` toggles Postgres SSL and the migrations path in [`src/config/dataSource.ts`](src/config/dataSource.ts); the container runs pending migrations (`npm run migration:run:prod`) before starting the server on every deploy.
+
+To reproduce the Blueprint on your own Render account: **New → Blueprint**, point it at this repo, and fill in the secrets it prompts for (`ADMIN_PASSWORD`, `CORS_ORIGIN`, and the Twilio vars if low-stock WhatsApp alerts are enabled) — `JWT_SECRET` is generated automatically and the DB credentials are wired from the managed database.
 
 ## Scripts
 
