@@ -22,6 +22,7 @@ if (missingVars.length > EMPTY_ENV_VAR) {
 }
 
 export const env = {
+  NODE_ENV: process.env.NODE_ENV ?? "development",
   PORT: process.env.PORT ?? HOST,
   DB_HOST: process.env.DB_HOST ?? LOCALHOST,
   DB_PORT: process.env.DB_PORT ?? DB_HOST,
@@ -31,4 +32,8 @@ export const env = {
   CORS_ORIGIN: process.env.CORS_ORIGIN ?? "http://localhost:5173",
   JWT_SECRET: process.env.JWT_SECRET!,
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD!,
+  TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID,
+  TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN,
+  TWILIO_WHATSAPP_FROM: process.env.TWILIO_WHATSAPP_FROM,
+  TWILIO_WHATSAPP_TO: process.env.TWILIO_WHATSAPP_TO,
 };
