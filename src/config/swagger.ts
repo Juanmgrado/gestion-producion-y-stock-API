@@ -214,7 +214,7 @@ export const swaggerSpec = {
       },
     },
     // ===================== USERS =====================
-    "/user": {
+    "/users": {
       get: {
         tags: ["Users"],
         summary: "List users",
@@ -250,7 +250,7 @@ export const swaggerSpec = {
         },
       },
     },
-    "/user/{uuid}": {
+    "/users/{uuid}": {
       get: {
         tags: ["Users"],
         summary: "Get a user by UUID",
@@ -291,7 +291,7 @@ export const swaggerSpec = {
         },
       },
     },
-    "/user/{uuid}/reactivate": {
+    "/users/{uuid}/reactivate": {
       patch: {
         tags: ["Users"],
         summary: "Reactivate a deactivated user",
@@ -305,7 +305,7 @@ export const swaggerSpec = {
       },
     },
     // ===================== PRODUCTS =====================
-    "/product": {
+    "/products": {
       get: {
         tags: ["Products"],
         summary: "List products",
@@ -340,7 +340,7 @@ export const swaggerSpec = {
         },
       },
     },
-    "/product/{uuid}": {
+    "/products/{uuid}": {
       get: {
         tags: ["Products"],
         summary: "Get a product by UUID",
@@ -422,7 +422,7 @@ export const swaggerSpec = {
       },
     },
     // ===================== STOCK ADJUSTMENTS =====================
-    "/adjustment": {
+    "/adjustments": {
       get: {
         tags: ["Stock Adjustments"],
         summary: "List stock adjustments",
@@ -447,7 +447,7 @@ export const swaggerSpec = {
         },
       },
     },
-    "/adjustment/{adjustmentUuid}": {
+    "/adjustments/{adjustmentUuid}": {
       get: {
         tags: ["Stock Adjustments"],
         summary: "Get an adjustment by UUID",
@@ -461,7 +461,7 @@ export const swaggerSpec = {
         },
       },
     },
-    "/adjustment/{productUuid}": {
+    "/adjustments/{productUuid}": {
       post: {
         tags: ["Stock Adjustments"],
         summary: "Register a stock adjustment (set absolute stock)",

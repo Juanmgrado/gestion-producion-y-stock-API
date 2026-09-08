@@ -9,9 +9,9 @@ import { verifyAdmin } from "../middlewares/verifyIsAdmin.middleware.js";
 
 const router = Router();
 
-router.use("/user", verifyToken, verifyAdmin, userrouter);
-router.use("/product", verifyToken, productRouter);
+router.use("/users", verifyToken, verifyAdmin, userrouter);
+router.use("/products", verifyToken, productRouter);
 router.use("/movements", verifyToken, stockMovementRouter);
-router.use("/adjustment", verifyToken, verifyAdmin, adjustmentStockRouter);
+router.use("/adjustments", verifyToken, verifyAdmin, adjustmentStockRouter);
 router.use("/auth", authRouter);
 export default router;

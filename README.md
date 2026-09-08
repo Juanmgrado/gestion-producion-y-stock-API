@@ -149,7 +149,7 @@ Legend: 🔓 public · 🔑 requires login · 👑 requires admin.
 { "email": "user@admind.com", "password": "your_password" }
 ```
 
-### Users — `/api/user` 👑
+### Users — `/api/users` 👑
 
 | Method | Endpoint         | Description                          |
 | ------ | ---------------- | ------------------------------------ |
@@ -162,7 +162,7 @@ Legend: 🔓 public · 🔑 requires login · 👑 requires admin.
 
 List filters (query params): `name`, `email`, `isAdmin`, `isActive`, `sortBy`, `order`, `page`, `limit`.
 
-### Products — `/api/product` 🔑
+### Products — `/api/products` 🔑
 
 | Method | Endpoint            | Description                       |
 | ------ | ------------------- | --------------------------------- |
@@ -193,7 +193,7 @@ List filters (query params): `name`, `email`, `isAdmin`, `isActive`, `sortBy`, `
 
 `typeMovement` is one of `IN` | `OUT`. `OUT` movements that would push stock below zero are rejected.
 
-### Stock Adjustments — `/api/adjustment` 👑
+### Stock Adjustments — `/api/adjustments` 👑
 
 | Method | Endpoint                          | Description                          |
 | ------ | --------------------------------- | ------------------------------------ |
