@@ -57,6 +57,20 @@ export const getUsers = async (
   }
 };
 
+export const getCurrentUserController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try{
+    const { uuid } = req.user!
+    const result = await getUserResponseByUuid(uuid)
+    return res.status(200).json(result)
+  }catch(error){
+    next(error)
+  }
+};
+
 export const getUserByUuidController = async (
   req: GetUserByUuidRequest,
   res: Response,
