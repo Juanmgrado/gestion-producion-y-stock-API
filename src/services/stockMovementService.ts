@@ -141,6 +141,13 @@ export const registerMovement = async (
       throw new AppError("Product not found", 404);
     }
 
+    if (!foundProduct.isActive) {
+      throw new AppError(
+        "Cannot register movements for an inactive product",
+        409,
+      );
+    }
+
     const newStock = checkAndModifyStock(
       typeMovement,
       quantity,
