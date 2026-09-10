@@ -121,7 +121,7 @@ export const deleteUserController = async (
 ) => {
   try {
     const { uuid } = req.params;
-    const result = await deleteUser(uuid);
+    const result = await deleteUser(uuid, req.user!.uuid);
     return res.status(200).json(result);
   } catch (error) {
     next(error);
