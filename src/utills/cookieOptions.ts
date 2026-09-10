@@ -14,3 +14,15 @@ export const REFRESH_TOKEN_COOKIE_OPTIONS: CookieOptions = {
   sameSite: "none",
   maxAge: REFRESH_TOKEN_COOKIE_MAX_AGE,
 };
+
+// remember=false drops maxAge: the cookies become session cookies and the
+// browser clears them on close.
+export const buildAccessCookieOptions = (remember: boolean): CookieOptions => ({
+  ...ACCESS_TOKEN_COOKIE_OPTIONS,
+  maxAge: remember ? ACCESS_TOKEN_COOKIE_MAX_AGE : undefined,
+});
+
+export const buildRefreshCookieOptions = (remember: boolean): CookieOptions => ({
+  ...REFRESH_TOKEN_COOKIE_OPTIONS,
+  maxAge: remember ? REFRESH_TOKEN_COOKIE_MAX_AGE : undefined,
+});
