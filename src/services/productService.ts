@@ -168,6 +168,10 @@ export const deleteProduct = async (
 ): Promise<ApiResponse<ProductResponseDto>> => {
   const foundProduct = await getProductByUuid(productUuid);
 
+  if (!foundProduct.isActive) {
+    throw new AppError("Product is already inactive", 409);
+  }
+
   foundProduct.isActive = false;
 
   await productRepository.save(foundProduct);
@@ -190,6 +194,10 @@ export const updateProduct = async (
   const { uuid } = updateProductInput;
   const { name } = updateProductInput.updateProductData;
   const foundProduct = await getProductByUuid(uuid);
+
+  if (!foundProduct.isActive) {
+    throw new AppError("Cannot modify an inactive product", 409);
+  }
 
   if (name !== foundProduct.name) {
     const nameInUse = await productRepository.findOneBy({ name });
