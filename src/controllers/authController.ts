@@ -9,6 +9,8 @@ import { clearAuthCookies } from "../utills/clearAuthCookies.js";
 import {
   ACCESS_TOKEN_COOKIE_OPTIONS,
   REFRESH_TOKEN_COOKIE_OPTIONS,
+  buildAccessCookieOptions,
+  buildRefreshCookieOptions,
 } from "../utills/cookieOptions.js";
 
 export const loginController = async (
@@ -18,17 +20,18 @@ export const loginController = async (
 ) => {
   try {
     const authTokens = await loginUser(req.body);
+    const rememberMe = req.body.rememberMe ?? true;
 
     res
       .cookie(
         "accessToken",
         authTokens.data.accessToken,
-        ACCESS_TOKEN_COOKIE_OPTIONS,
+        buildAccessCookieOptions(rememberMe),
       )
       .cookie(
         "refreshToken",
         authTokens.data.refreshToken,
-        REFRESH_TOKEN_COOKIE_OPTIONS,
+        buildRefreshCookieOptions(rememberMe),
       )
       .status(200)
       .json({ message: "Logged in successfully" });
