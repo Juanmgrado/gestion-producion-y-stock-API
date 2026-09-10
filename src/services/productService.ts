@@ -12,8 +12,9 @@ import { getUserByUuid } from "./userService.js";
 
 export const getProducts = async (
   filtersProduct: GetProductFiltersDto,
+  isAdmin: boolean = false,
 ): Promise<PaginatedResponse<ProductResponseDto>> => {
-  const { name, isActive, minStock, maxStock, createdBy, page, limit } =
+  const { name, isActive, minStock, maxStock, createdBy, page, limit, sortBy, order } =
     filtersProduct;
   const query = productRepository
     .createQueryBuilder("product")
@@ -24,6 +25,7 @@ export const getProducts = async (
       "product.stock",
       "product.isActive",
       "user.uuid",
+      "user.name",
     ]);
 
   if (name) {
@@ -46,8 +48,15 @@ export const getProducts = async (
     });
   }
 
-  if (createdBy) {
-    query.andWhere("user.id = :createdBy", { createdBy });
+  if (isAdmin && createdBy) {
+    query.andWhere("user.uuid = :createdBy", { createdBy });
+  }
+
+  // "createdAt" is a valid ProductSortBy value but the entity has no such
+  // column, so ordering by it would blow up the query.
+  const SORTABLE_COLUMNS = ["name", "stock", "isActive"];
+  if (sortBy && SORTABLE_COLUMNS.includes(sortBy)) {
+    query.orderBy(`product.${sortBy}`, order === "ASC" ? "ASC" : "DESC");
   }
 
   const paginationValues = pagination(page, limit);
@@ -61,6 +70,9 @@ export const getProducts = async (
     name: product.name,
     stock: product.stock,
     isActive: product.isActive,
+    ...(isAdmin && product.user
+      ? { createdBy: { uuid: product.user.uuid, name: product.user.name } }
+      : {}),
   }));
 
   if (data.length === EMPTY_DATA_COUNT) {
