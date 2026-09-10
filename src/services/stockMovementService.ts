@@ -1,6 +1,9 @@
 import { AppDataSource } from "../config/dataSource.js";
 import { GetMovementsFiltersDto } from "../dto/movement/getMovementsFilters.dto.js";
-import { MovementResponse } from "../dto/movement/newMovementResponse.dto.js";
+import {
+  MovementListItem,
+  MovementResponse,
+} from "../dto/movement/newMovementResponse.dto.js";
 import { Product } from "../entities/product.entity.js";
 import { StockMovement } from "../entities/stockMovement.entity.js";
 import { AppError } from "../middlewares/errorHandler.middleware.js";
@@ -15,19 +18,11 @@ import { notifyLowStock } from "../utills/notifyLowStock.js";
 
 export const getMovements = async (
   stockMovementsFilters: GetMovementsFiltersDto,
-): Promise<PaginatedResponse<MovementResponse>> => {
+): Promise<PaginatedResponse<MovementListItem>> => {
   const qb = stockMovementRepository
     .createQueryBuilder("movement")
     .leftJoinAndSelect("movement.user", "user")
-    .leftJoinAndSelect("movement.product", "product")
-    .select([
-      "movement.uuid",
-      "movement.createdAt",
-      "product.uuid",
-      "movement.quantity",
-      "movement.typeMovement",
-      "user.name",
-    ]);
+    .leftJoinAndSelect("movement.product", "product");
 
   if (stockMovementsFilters.productUuid) {
     qb.andWhere("movement.productUuid = :productUuid", {
@@ -84,35 +79,32 @@ export const getMovements = async (
     stockMovementsFilters.limit,
   );
 
-  console.log(paginationValues.page, stockMovementsFilters.limit);
+  const [movements, total] = await qb
+    .skip(paginationValues.skip)
+    .take(paginationValues.limit)
+    .getManyAndCount();
 
-  const total = await qb.getCount();
-
-  const movements: MovementResponse[] = await qb
-    .offset(paginationValues.skip)
-    .limit(stockMovementsFilters.limit)
-    .getRawMany();
-
-  if (movements.length === EMPTY_DATA_COUNT) {
-    return {
-      success: true,
-      message: "No movements registered",
-      total: 0,
-      page: paginationValues.page,
-      limit: paginationValues.limit,
-      totalPages: 0,
-      data: [],
-    };
-  }
+  const data: MovementListItem[] = movements.map((movement) => ({
+    uuid: movement.uuid,
+    quantity: movement.quantity,
+    typeMovement: movement.typeMovement,
+    note: movement.note,
+    createdAt: movement.createdAt,
+    product: { uuid: movement.product.uuid, name: movement.product.name },
+    user: movement.user ? { name: movement.user.name } : null,
+  }));
 
   return {
     success: true,
-    message: "Movements retrieved successfully",
-    total: total,
+    message:
+      data.length === EMPTY_DATA_COUNT
+        ? "No movements registered"
+        : "Movements retrieved successfully",
+    total,
     page: paginationValues.page,
     limit: paginationValues.limit,
     totalPages: Math.ceil(total / paginationValues.limit),
-    data: movements,
+    data,
   };
 };
 

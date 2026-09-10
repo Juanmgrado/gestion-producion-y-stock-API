@@ -9,3 +9,13 @@ export type MovementResponse = {
   productUuid: ProductUuid;
   createdAt: Date;
 };
+
+export type MovementListItem = {
+  uuid: string;
+  quantity: number;
+  typeMovement: MovementType;
+  note: string;
+  createdAt: Date;
+  product: { uuid: string; name: string };
+  user: { name: string } | null;
+};
