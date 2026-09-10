@@ -8,6 +8,7 @@ import {
 } from "../services/productService.js";
 import { GetProductFiltersDto } from "../dto/product/getProductFilters.dto.js";
 import { DEFAULT_PAGE, LIMIT_PAGE } from "../utills/consts.js";
+import { Order, ProductSortBy } from "../types/enums.js";
 import {
   CreateNewProductRequest,
   GetProductByUuidRequest,
@@ -33,10 +34,17 @@ export const getProductsController = async (
       createdBy: req.query.createdBy as string | undefined,
       page: req.query.page ? Number(req.query.page) : DEFAULT_PAGE,
       limit: req.query.limit ? Number(req.query.limit) : LIMIT_PAGE,
-      sortBy: req.query.sortBy as string | undefined,
+      sortBy: Object.values(ProductSortBy).includes(
+        req.query.sortBy as ProductSortBy,
+      )
+        ? (req.query.sortBy as ProductSortBy)
+        : undefined,
+      order: Object.values(Order).includes(req.query.order as Order)
+        ? (req.query.order as Order)
+        : undefined,
     };
 
-    const productsList = await getProducts(filtersProduct);
+    const productsList = await getProducts(filtersProduct, req.user!.isAdmin);
     return res.status(200).json(productsList);
   } catch (error) {
     next(error);
