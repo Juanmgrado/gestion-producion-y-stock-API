@@ -195,7 +195,12 @@ export const reActiveUser = async (
 
 export const deleteUser = async (
   userUuid: string,
+  requesterUuid: string,
 ): Promise<ApiResponse<UserResponseDto>> => {
+  if (userUuid === requesterUuid) {
+    throw new AppError("You cannot deactivate your own account", 409);
+  }
+
   const foundUser = await getUserByUuid(userUuid);
 
   if (foundUser.isActive === false) {
@@ -226,6 +231,10 @@ export const updateUser = async (
   loggedUser: JwtPayload,
 ): Promise<UpdateUserResult> => {
   const { email, name, isAdmin } = updateUserData;
+
+  if (isAdmin === false && userUuid === loggedUser.uuid) {
+    throw new AppError("You cannot remove your own admin role", 409);
+  }
 
   const user = await getUserByUuid(userUuid);
 
